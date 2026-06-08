@@ -20,7 +20,7 @@ mongoose.connect(MONGO_URI)
             console.log(`Servidor corriendo en http://${IP_SERVER}:${port}/api/${API_VERSION}`);
         });
 
-        console.log("La conexion con la base de datos ha sido exitosa");
+        console.log("######La conexion con la base de datos ha sido exitosa#####");
     })
     .catch(error => {
         console.log("Error de conexion:", error.message);
