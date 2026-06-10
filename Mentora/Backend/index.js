@@ -9,7 +9,7 @@ const {
     IP_SERVER
 } = require("./constants");
 
-const MONGO_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}`;
+const MONGO_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/Mentora_db?retryWrites=true&w=majority`;
 const port = process.env.PORT || 3977;
 console.log("=== LA URI DETECTADA ES ==> ", MONGO_URI);
 mongoose.set('debug', true);
