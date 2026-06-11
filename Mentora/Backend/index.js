@@ -18,7 +18,7 @@ mongoose.set('debug', true);
 mongoose.connect(MONGO_URI)
     .then(() => {
         app.listen(port, () => {
-            console.log(`Servidor corriendo en
+            console.log(`Servidor corriendo en \n
                  http://${IP_SERVER}:${port}/api/${API_VERSION}`);
         });
 
