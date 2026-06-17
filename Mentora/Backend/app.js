@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { API_VERSION } = require("./constants");
 
+const AuthRouter = require("./router/Auth");
 const DocumentRouter = require("./router/document");
 const UsuariosRouter = require("./router/Usuarios");
 const CursosRouter = require("./router/Cursos");
@@ -19,6 +20,7 @@ app.use(express.static("uploads"));
 
 app.use(cors({ origin: "http://localhost:3000" }));
 
+app.use(`/api/${API_VERSION}`, AuthRouter);
 app.use(`/api/${API_VERSION}`, DocumentRouter)
 app.use(`/api/${API_VERSION}`, UsuariosRouter)
 app.use(`/api/${API_VERSION}`, CursosRouter)
