@@ -10,16 +10,13 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "bcryptjs": "2.4.3",
-=======
     "bcryptjs": "^3.0.3",
->>>>>>> da35fe5620427be9034a1bdd4e8923341806c320
     "body-parser": "1.20.0",
     "cors": "2.8.5",
     "dotenv": "17.4.2",
     "express": "4.18.1",
+    "jsonwebtoken": "^9.1.2",
     "mongoose": "6.6.1",
-    "nodemon": "3.1.14"
+    "nodemon": "^3.1.14"
   }
 }

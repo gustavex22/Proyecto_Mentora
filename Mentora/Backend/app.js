@@ -3,7 +3,10 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const { API_VERSION } = require("./constants");
 
-const DocumentRouter = require("./router/document");
+const AuthRoutes = require("./router/Auth");
+const { verificarToken } = require("./middlewares/autenticacion");
+
+//const DocumentRouter = require("./router/document");
 const UsuariosRouter = require("./router/Usuarios");
 const CursosRouter = require("./router/Cursos");
 const InscripcionesRouter = require("./router/Inscripciones");
@@ -19,7 +22,11 @@ app.use(express.static("uploads"));
 
 app.use(cors({ origin: "http://localhost:3000" }));
 
-app.use(`/api/${API_VERSION}`, DocumentRouter)
+// Rutas de autenticación (públicas)
+app.use(`/api/${API_VERSION}`, AuthRoutes);
+
+// Rutas protegidas (requieren token)
+//app.use(`/api/${API_VERSION}`, DocumentRouter)
 app.use(`/api/${API_VERSION}`, UsuariosRouter)
 app.use(`/api/${API_VERSION}`, CursosRouter)
 app.use(`/api/${API_VERSION}`, InscripcionesRouter)
