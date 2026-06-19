@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const secciones = new mongoose.Schema(
+
+const seccionSchema = new mongoose.Schema(
   {
     cursoID: {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,7 +20,8 @@ const secciones = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: "secciones"
   }
 );
 
-module.exports = mongoose.model("Seccion", secciones);
+module.exports = mongoose.model("Seccion", seccionSchema, "secciones");

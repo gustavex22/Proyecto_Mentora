@@ -10,8 +10,14 @@ const {
     IP_SERVER
 } = require("./constants");
 
+const DB_NAME = process.env.DB_NAME || "Mentora_db";
+const DB_HOST_CLEAN = (DB_HOST || "")
+    .replace(/\/.*$/, "")
+    .replace(/\?.*$/, "");
+const DB_OPTIONS = process.env.DB_OPTIONS || "ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI ||
+    `mongodb://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST_CLEAN}/${DB_NAME}?${DB_OPTIONS}&retryWrites=true&w=majority`;
 
-const MONGO_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/Mentora_db?ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
 const port = process.env.PORT || 3977;
 console.log("=== LA URI DETECTADA ES ==> ", MONGO_URI);
 mongoose.set('debug', true);

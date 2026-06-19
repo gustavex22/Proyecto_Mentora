@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const DocumentSchema = new mongoose.Schema(
+const documentSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -28,7 +28,8 @@ const DocumentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: "documents"
   }
 );
 
-module.exports = mongoose.model("Document", DocumentSchema);
+module.exports = mongoose.model("Document", documentSchema, "documents");
