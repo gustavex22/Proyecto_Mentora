@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const resenaSchema = new mongoose.Schema({
+const resenas = new mongoose.Schema({
   estudiante_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario',
@@ -30,8 +30,9 @@ const resenaSchema = new mongoose.Schema({
     default: ''
   }
 }, {
-  timestamps: true,
-  collection: 'reseñas'
+  timestamps: true 
 });
 
-module.exports = mongoose.model('Resena', resenaSchema, 'reseñas');
+
+const Resena = mongoose.model('Resenas', resenas);
+module.exports = Resena;

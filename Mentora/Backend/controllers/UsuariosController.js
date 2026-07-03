@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
 const Usuario = require("../models/Usuarios");
 
-exports.createDocument = async (req, res) => {
+exports.createUser = async (req, res) => {
   try {
     const { nombre, correo, password, rol } = req.body;
 
-    // Validar que los campos requeridos estén presentes
     if (!nombre || !correo || !password) {
       return res.status(400).json({
         success: false,
@@ -13,7 +12,6 @@ exports.createDocument = async (req, res) => {
       });
     }
 
-    // Validar que el rol sea válido si se proporciona
     if (rol && !["instructor", "estudiante"].includes(rol)) {
       return res.status(400).json({
         success: false,
@@ -21,7 +19,6 @@ exports.createDocument = async (req, res) => {
       });
     }
 
-    // Verificar si el correo ya existe
     const usuarioExistente = await Usuario.findOne({ correo: correo.toLowerCase() });
     if (usuarioExistente) {
       return res.status(400).json({
@@ -30,20 +27,17 @@ exports.createDocument = async (req, res) => {
       });
     }
 
-    // Crear y guardar el usuario (la encriptación se hace automáticamente en el modelo)
-    const document = new Usuario(req.body);
-    const savedDocument = await document.save();
+    const user = new Usuario(req.body);
+    const savedUser = await user.save();
 
-    // Retornar el usuario sin la contraseña
-    const { password: _, ...usuarioData } = savedDocument.toObject();
+    const { password: _, ...usuarioData } = savedUser.toObject();
 
     return res.status(201).json({
       success: true,
       message: "Usuario registrado exitosamente",
-      document: usuarioData
+      user: usuarioData
     });
   } catch (error) {
-    // Manejar error de duplicado de correo (aunque ya lo verificamos antes)
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -54,41 +48,47 @@ exports.createDocument = async (req, res) => {
   }
 };
 
-exports.getDocuments = async (req, res) => {
+exports.getUsers = async (req, res) => {
   try {
-    const documents = await Usuario.find().select("-password");
-    return res.status(200).json({ success: true, documents });
+    const users = await Usuario.find().select("-password");
+    return res.status(200).json({ success: true, users });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.getDocumentById = async (req, res) => {
+exports.getUserById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ success: false, message: "ID inválido" });
     }
 
-    const document = await Usuario.findById(id).select("-password");
-    if (!document) {
-      return res.status(404).json({ success: false, message: "Documento no encontrado" });
+    const user = await Usuario.findById(id).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
 
-    return res.status(200).json({ success: true, document });
+    return res.status(200).json({ success: true, user });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.updateDocument = async (req, res) => {
+exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ success: false, message: "ID inválido" });
     }
 
-    // Si se intenta actualizar el correo, verificar que no exista
+    if (req.user.id !== id && req.user.rol !== 'instructor') {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes editar tu propio perfil"
+      });
+    }
+
     if (req.body.correo) {
       const usuarioConCorreo = await Usuario.findOne({
         correo: req.body.correo.toLowerCase(),
@@ -102,34 +102,34 @@ exports.updateDocument = async (req, res) => {
       }
     }
 
-    const updatedDocument = await Usuario.findByIdAndUpdate(id, req.body, {
+    const updatedUser = await Usuario.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     }).select("-password");
 
-    if (!updatedDocument) {
-      return res.status(404).json({ success: false, message: "Documento no encontrado" });
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
 
-    return res.status(200).json({ success: true, document: updatedDocument });
+    return res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
 };
 
-exports.deleteDocument = async (req, res) => {
+exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ success: false, message: "ID inválido" });
     }
 
-    const deletedDocument = await Usuario.findByIdAndDelete(id);
-    if (!deletedDocument) {
-      return res.status(404).json({ success: false, message: "Documento no encontrado" });
+    const deletedUser = await Usuario.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
     }
 
-    return res.status(200).json({ success: true, message: "Documento eliminado correctamente" });
+    return res.status(200).json({ success: true, message: "Usuario eliminado correctamente" });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

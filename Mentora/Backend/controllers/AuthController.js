@@ -208,3 +208,69 @@ exports.refreshToken = async (req, res) => {
     });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const camposPermitidos = ['nombre', 'biografia', 'foto', 'redes_sociales'];
+    const datosActualizar = {};
+    
+    for (const campo of camposPermitidos) {
+      if (req.body[campo] !== undefined) {
+        datosActualizar[campo] = req.body[campo];
+      }
+    }
+
+    if (req.body.correo) {
+      const usuarioConCorreo = await Usuario.findOne({
+        correo: req.body.correo.toLowerCase(),
+        _id: { $ne: req.user.id }
+      });
+      if (usuarioConCorreo) {
+        return res.status(400).json({
+          success: false,
+          message: 'El correo electrónico ya está registrado'
+        });
+      }
+      datosActualizar.correo = req.body.correo.toLowerCase();
+    }
+
+    if (Object.keys(datosActualizar).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se proporcionaron campos válidos para actualizar'
+      });
+    }
+
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      req.user.id,
+      datosActualizar,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Perfil actualizado exitosamente',
+      data: usuarioActualizado
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El correo electrónico ya está registrado'
+      });
+    }
+    console.error('Error al actualizar perfil:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};

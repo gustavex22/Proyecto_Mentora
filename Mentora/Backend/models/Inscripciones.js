@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-
-const progresoSchema = new mongoose.Schema({
+const progreso = new mongoose.Schema({
   leccion_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Lecciones', 
@@ -12,7 +11,8 @@ const progresoSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-const inscripcionSchema = new mongoose.Schema({
+
+const inscripciones = new mongoose.Schema({
   estudiante_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario',
@@ -31,7 +31,7 @@ const inscripcionSchema = new mongoose.Schema({
     required: [true, 'El ID del curso es obligatorio.']
   },
 
-  progreso: [progresoSchema], 
+  progreso: [progreso], 
   porcentaje: {
     type: Number,
     default: 0,
@@ -42,8 +42,8 @@ const inscripcionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now 
   }
-}, {
-  collection: 'inscripciones'
 });
 
-module.exports = mongoose.model('Inscripcion', inscripcionSchema, 'inscripciones');
+
+const Inscripcion = mongoose.model('Inscripciones', inscripciones);
+module.exports = Inscripcion;
