@@ -5,10 +5,10 @@ const { esInstructor, esEstudiante } = require("../middlewares/roleMiddleware");
 
 const api = express.Router();
 
-api.post("/Usuarios", authMiddleware, esInstructor, UsuariosController.createDocument); 
-api.get("/Usuarios", authMiddleware, UsuariosController.getDocuments);
-api.get("/Usuarios/:id", authMiddleware, UsuariosController.getDocumentById);
-api.put("/Usuarios/:id", authMiddleware, UsuariosController.updateDocument); 
-api.delete("/Usuarios/:id", authMiddleware, esInstructor, UsuariosController.deleteDocument);
+api.post("/Usuarios", authMiddleware, esInstructor, UsuariosController.createUser);
+api.get("/Usuarios", authMiddleware, UsuariosController.getUsers);
+api.get("/Usuarios/:id", authMiddleware, UsuariosController.getUserById);
+api.put("/Usuarios/:id", authMiddleware, UsuariosController.updateUser);
+api.delete("/Usuarios/:id", authMiddleware, esInstructor, UsuariosController.deleteUser);
 
 module.exports = api;

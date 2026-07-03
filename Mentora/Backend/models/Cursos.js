@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-
-const cursoSchema = new mongoose.Schema(
+const cursos = new mongoose.Schema(
   {
     instructorID: {
       type: mongoose.Schema.Types.ObjectId,
@@ -59,8 +58,7 @@ const cursoSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: "cursos"
   }
 );
 
-module.exports = mongoose.model("Curso", cursoSchema, "cursos");
+module.exports = mongoose.model("Curso", cursos);

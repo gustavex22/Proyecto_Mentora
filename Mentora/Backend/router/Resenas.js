@@ -1,12 +1,14 @@
 const express = require("express");
 const ResenasController = require("../controllers/ResenasController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esEstudiante, esInstructorOEstudiante } = require("../middlewares/roleMiddleware");
 
 const api = express.Router();
 
-api.post("/Resenas", ResenasController.createResena);
-api.get("/Resenas", ResenasController.getResenas);
+api.post("/Resenas", authMiddleware, esEstudiante, ResenasController.createResena);
+api.get("/Cursos/:id/resenas", ResenasController.getResenasByCurso);
 api.get("/Resenas/:id", ResenasController.getResenaById);
-api.put("/Resenas/:id", ResenasController.updateResena);
-api.delete("/Resenas/:id", ResenasController.deleteResena);
+api.put("/Resenas/:id", authMiddleware, esInstructorOEstudiante, ResenasController.updateResena);
+api.delete("/Resenas/:id", authMiddleware, esInstructorOEstudiante, ResenasController.deleteResena);
 
 module.exports = api;
