@@ -1,16 +1,16 @@
-const jwt = require('jsonwebtoken');
-const Usuario = require('../models/Usuarios');
+const jwt = require("jsonwebtoken");
+const Usuario = require("../models/Usuarios");
 const { JWT_SECRET, JWT_EXPIRATION } = require('../constants');
 
 // Controlador de registro de nuevos usuarios
 exports.register = async (req, res) => {
   try {
-    const { nombre, correo, password, rol } = req.body;
+    const { nombre,apellido, correo, password, rol } = req.body;
 
-    if (!nombre || !correo || !password) {
+    if (!nombre || !apellido || !correo || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Nombre, correo y contraseña son requeridos'
+        message: 'Nombre,,apellido, correo y contraseña son requeridos'
       });
     }
 
@@ -31,6 +31,7 @@ exports.register = async (req, res) => {
 
     const usuario = new Usuario({
       nombre,
+      apellido,
       correo: correo.toLowerCase(),
       password,
       rol: rol || 'estudiante'
