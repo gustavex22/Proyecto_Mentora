@@ -1,0 +1,268 @@
+/* PALETA DE COLOR INTEGRADA */
+:root {
+    --verde-apagado-oscuro: #1b2e26;    
+    --verde-apagado-medio:  #345446;    
+    --verde-apagado-suave:  #507a67;    
+    --verde-intermedio-luz: #a3beb0;    
+    --verde-casi-blanco:    #e8f0ec;    
+    --blanco-puro:          #ffffff;    
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--verde-casi-blanco);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* --- RECREACIÓN DEL FONDO ABSTRACTO DE TRIÁNGULOS --- */
+.geometric-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    background-color: var(--verde-casi-blanco);
+    overflow: hidden;
+    filter: blur(4px);
+}
+
+.triangle {
+    position: absolute;
+    opacity: 0.8;
+}
+
+.tri-1 {
+    top: -5%; left: 10%; width: 35vw; height: 35vw;
+    background-color: var(--verde-intermedio-luz);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.tri-2 {
+    top: 25%; left: -10%; width: 40vw; height: 40vw;
+    background-color: var(--verde-apagado-suave);
+    clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+}
+
+.tri-3 {
+    bottom: -10%; left: 15%; width: 30vw; height: 30vw;
+    background-color: var(--verde-apagado-oscuro);
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+}
+
+.tri-4 {
+    top: -10%; right: 5%; width: 38vw; height: 38vw;
+    background-color: var(--verde-apagado-medio);
+    clip-path: polygon(100% 0%, 0% 50%, 100% 100%);
+}
+
+.tri-5 {
+    top: 35%; right: -5%; width: 30vw; height: 30vw;
+    background-color: var(--verde-intermedio-luz);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.tri-6 {
+    bottom: -5%; right: 15%; width: 35vw; height: 35vw;
+    background-color: var(--verde-apagado-suave);
+    clip-path: polygon(0% 100%, 100% 0%, 100% 100%);
+}
+
+.tri-7 {
+    top: 40%; left: 45%; width: 15vw; height: 15vw;
+    background-color: var(--verde-apagado-medio);
+    opacity: 0.4;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.tri-8 {
+    top: 18%; right: 38%; width: 24vw; height: 24vw;
+    background-color: var(--verde-intermedio-luz);
+    opacity: 0.55;
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%);
+}
+
+/* --- CONTENEDOR FLOTANTE --- */
+.login-wrapper {
+    width: 100%;
+    padding: 40px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+/* EL LOGIN QUE QUEDÓ PERFECTO (GLASSMORPHISM) */
+.glass-card {
+    background: rgba(27, 46, 38, 0.82); 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 48px 40px;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    color: var(--blanco-puro);
+}
+
+.login-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 36px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* Ajuste sutil de espacio para los 4 campos */
+}
+
+.input-container {
+    position: relative;
+    width: 100%;
+}
+
+.round-input {
+    width: 100%;
+    padding: 14px 48px 14px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 30px;
+    font-size: 14.5px;
+    color: var(--blanco-puro);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.round-input::placeholder {
+    color: rgba(232, 240, 236, 0.5);
+}
+
+.round-input:focus {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: var(--verde-intermedio-luz);
+    box-shadow: 0 0 0 4px rgba(163, 190, 176, 0.15);
+}
+
+.input-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(232, 240, 236, 0.6);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+}
+
+.form-options {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: rgba(232, 240, 236, 0.8);
+    text-align: left;
+}
+
+.remember-me input {
+    accent-color: var(--verde-intermedio-luz);
+    cursor: pointer;
+}
+
+.btn-primary-round {
+    background-color: var(--blanco-puro);
+    color: var(--verde-apagado-oscuro);
+    border: none;
+    padding: 14px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary-round:hover {
+    background-color: var(--verde-casi-blanco);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.social-section {
+    margin-top: 32px;
+}
+
+.social-title {
+    font-size: 13px;
+    color: rgba(232, 240, 236, 0.6);
+    margin-bottom: 16px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.social-btn-round {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: var(--blanco-puro);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.social-btn-round:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--blanco-puro);
+    transform: scale(1.08);
+}
+
+.signup-redirect {
+    margin-top: 36px;
+    font-size: 13.5px;
+    color: rgba(232, 240, 236, 0.7);
+}
+
+.signup-redirect a {
+    color: var(--blanco-puro);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.signup-redirect a:hover {
+    border-color: var(--blanco-puro);
+}
