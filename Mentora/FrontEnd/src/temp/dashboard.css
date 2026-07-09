@@ -1,0 +1,298 @@
+/* PALETA DE COLOR INTEGRADA */
+:root {
+    --verde-apagado-oscuro: #1b2e26;    
+    --verde-apagado-medio:  #345446;    
+    --verde-apagado-suave:  #507a67;    
+    --verde-intermedio-luz: #a3beb0;    
+    --verde-casi-blanco:    #e8f0ec;    
+    --blanco-puro:          #ffffff;    
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--verde-casi-blanco);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* --- RECREACIÓN DEL FONDO ABSTRACTO DE TRIÁNGULOS --- */
+.geometric-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    background-color: var(--verde-casi-blanco);
+    overflow: hidden;
+    filter: blur(4px);
+}
+
+.triangle { position: absolute; opacity: 0.8; }
+.tri-1 { top: -5%; left: 10%; width: 35vw; height: 35vw; background-color: var(--verde-intermedio-luz); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+.tri-2 { top: 25%; left: -10%; width: 40vw; height: 40vw; background-color: var(--verde-apagado-suave); clip-path: polygon(0% 0%, 100% 50%, 0% 100%); }
+.tri-3 { bottom: -10%; left: 15%; width: 30vw; height: 30vw; background-color: var(--verde-apagado-oscuro); clip-path: polygon(50% 100%, 0% 0%, 100% 0%); }
+.tri-4 { top: -10%; right: 5%; width: 38vw; height: 38vw; background-color: var(--verde-apagado-medio); clip-path: polygon(100% 0%, 0% 50%, 100% 100%); }
+.tri-5 { top: 35%; right: -5%; width: 30vw; height: 30vw; background-color: var(--verde-intermedio-luz); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+.tri-6 { bottom: -5%; right: 15%; width: 35vw; height: 35vw; background-color: var(--verde-apagado-suave); clip-path: polygon(0% 100%, 100% 0%, 100% 100%); }
+.tri-7 { top: 40%; left: 45%; width: 15vw; height: 15vw; background-color: var(--verde-apagado-medio); opacity: 0.4; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+.tri-8 { top: 18%; right: 38%; width: 24vw; height: 24vw; background-color: var(--verde-intermedio-luz); opacity: 0.55; clip-path: polygon(0% 0%, 100% 0%, 100% 100%); }
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.dashboard-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- NAVBAR GLASSMORPHISM --- */
+.glass-navbar {
+    background: rgba(27, 46, 38, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--blanco-puro);
+}
+
+.search-container {
+    width: 400px;
+}
+
+.search-input {
+    padding: 10px 40px 10px 20px; /* Ajuste para el nav */
+}
+
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--blanco-puro);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.btn-text:hover { color: var(--verde-intermedio-luz); }
+
+.btn-nav {
+    padding: 10px 24px;
+    font-size: 14px;
+    margin-top: 0; /* Override del form */
+}
+
+/* --- ESTILOS REUTILIZADOS (INPUTS & BOTONES) --- */
+.input-container { position: relative; }
+.round-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 30px;
+    font-size: 14px;
+    color: var(--blanco-puro);
+    outline: none;
+    transition: all 0.3s ease;
+}
+.round-input::placeholder { color: rgba(232, 240, 236, 0.5); }
+.round-input:focus {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: var(--verde-intermedio-luz);
+    box-shadow: 0 0 0 4px rgba(163, 190, 176, 0.15);
+}
+.input-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(232, 240, 236, 0.6);
+    pointer-events: none;
+}
+.btn-primary-round {
+    background-color: var(--blanco-puro);
+    color: var(--verde-apagado-oscuro);
+    border: none;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary-round:hover {
+    background-color: var(--verde-casi-blanco);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- MAIN CONTENT & FILTROS --- */
+.main-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px;
+    width: 100%;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.login-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--blanco-puro);
+}
+
+.subtitle {
+    color: rgba(232, 240, 236, 0.8);
+    font-size: 15px;
+}
+
+.filters-group {
+    display: flex;
+    gap: 16px;
+}
+
+.glass-dropdown {
+    background: rgba(27, 46, 38, 0.5);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 30px;
+    padding: 10px 20px;
+    color: var(--blanco-puro);
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.glass-dropdown:hover {
+    background: rgba(27, 46, 38, 0.8);
+    border-color: var(--verde-intermedio-luz);
+}
+
+.glass-dropdown strong {
+    color: var(--verde-intermedio-luz);
+    font-weight: 600;
+}
+
+/* --- TARJETAS DE CURSO GLASSMORPHISM --- */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.glass-card {
+    background: rgba(27, 46, 38, 0.75); 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px; /* Bordes suaves acordes al login */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    color: var(--blanco-puro);
+}
+
+.course-card {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.course-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.card-image-placeholder {
+    height: 160px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.card-info {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.card-description {
+    font-size: 13px;
+    color: rgba(232, 240, 236, 0.7);
+    line-height: 1.5;
+}
+
+.card-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tag-glass {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--verde-intermedio-luz);
+}
+
+.price-glass {
+    font-size: 15px;
+    font-weight: 700;
+}

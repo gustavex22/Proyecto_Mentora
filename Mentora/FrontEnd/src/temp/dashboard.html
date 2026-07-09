@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentora - Catálogo Glassmorphism</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <!-- Fondo Geométrico del Login/Register -->
+    <div class="geometric-background">
+        <div class="triangle tri-1"></div>
+        <div class="triangle tri-2"></div>
+        <div class="triangle tri-3"></div>
+        <div class="triangle tri-4"></div>
+        <div class="triangle tri-5"></div>
+        <div class="triangle tri-6"></div>
+        <div class="triangle tri-7"></div>
+        <div class="triangle tri-8"></div>
+    </div>
+
+    <!-- Contenido Flotante -->
+    <div class="dashboard-wrapper">
+        
+        <!-- NAVBAR GLASSMORPHISM -->
+        <nav class="glass-navbar">
+            <div class="logo">MENTORA</div>
+            
+            <div class="search-container input-container">
+                <input type="text" placeholder="Buscar cursos..." class="round-input search-input">
+                <span class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+            </div>
+
+            <div class="auth-buttons">
+                <button class="btn-text">Iniciar sesión</button>
+                <button class="btn-primary-round btn-nav">Registrarte</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <!-- ENCABEZADO Y FILTROS -->
+            <div class="header-section">
+                <div class="title-block">
+                    <h1 class="login-title" style="margin-bottom: 8px; text-align: left;">Catálogo de Cursos</h1>
+                    <p class="subtitle">Explora rutas de aprendizaje diseñadas por expertos.</p>
+                </div>
+
+                <div class="filters-group">
+                    <div class="glass-dropdown">
+                        <span>Categorías: <strong>Todas</strong></span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="glass-dropdown">
+                        <span>Nivel: <strong>Todos</strong></span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="glass-dropdown">
+                        <span>Precio: <strong>Todos</strong></span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUADRÍCULA DE CURSOS -->
+            <div class="courses-grid">
+                
+                <!-- Tarjeta 1 -->
+                <div class="glass-card course-card">
+                    <div class="card-image-placeholder">IMAGEN CURSO</div>
+                    <div class="card-info">
+                        <h3 class="card-title">Diseño UI/UX Avanzado</h3>
+                        <p class="card-description">Fundamentos esenciales de interfaz de usuario moderna.</p>
+                        <div class="card-footer">
+                            <span class="tag-glass">Básico</span>
+                            <span class="price-glass">Gratis</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2 -->
+                <div class="glass-card course-card">
+                    <div class="card-image-placeholder">IMAGEN CURSO</div>
+                    <div class="card-info">
+                        <h3 class="card-title">Desarrollo Backend</h3>
+                        <p class="card-description">Desarrollo modular robusto utilizando Node.js y bases de datos.</p>
+                        <div class="card-footer">
+                            <span class="tag-glass">Intermedio</span>
+                            <span class="price-glass">Premium</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3 -->
+                <div class="glass-card course-card">
+                    <div class="card-image-placeholder">IMAGEN CURSO</div>
+                    <div class="card-info">
+                        <h3 class="card-title">Gestión de Bases de Datos</h3>
+                        <p class="card-description">Optimización de consultas SQL y arquitectura relacional.</p>
+                        <div class="card-footer">
+                            <span class="tag-glass">Avanzado</span>
+                            <span class="price-glass">Premium</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4 -->
+                <div class="glass-card course-card">
+                    <div class="card-image-placeholder">IMAGEN CURSO</div>
+                    <div class="card-info">
+                        <h3 class="card-title">Frontend con React</h3>
+                        <p class="card-description">Lógica de programación moderna y componentes funcionales.</p>
+                        <div class="card-footer">
+                            <span class="tag-glass">Intermedio</span>
+                            <span class="price-glass">Gratis</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>
