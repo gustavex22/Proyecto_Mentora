@@ -127,59 +127,10 @@
   cursor: not-allowed;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-.resena-edit-form {
-  margin-top: 12px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-}
-
-.resena-edit-textarea {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  color: #ffffff;
-  font-size: 14px;
-  resize: vertical;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-.resena-edit-textarea:focus {
-  outline: none;
-  border-color: #4f6b5b;
-}
-
-.resena-acciones {
-  display: flex;
-  gap: 6px;
-  align-self: flex-start;
-}
-
-.resena-acciones .preview-btn-outline {
-  font-size: 12px;
-  padding: 4px 10px;
-}
-
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
 .resena-header {
   display: flex;
   align-items: center;
   gap: 12px;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  flex-wrap: wrap;
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
 }
 
 .resena-header img {
@@ -195,25 +146,6 @@
   flex: 1;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-.resena-fecha {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.resena-acciones {
-  display: flex;
-  gap: 6px;
-  align-self: flex-start;
-}
-
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
 .resena-comentario {
   color: #cbd5e1;
   line-height: 1.6;

@@ -30,27 +30,6 @@ exports.createResena = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-    if (leccion_id !== undefined && leccion_id !== null) {
-      if (!mongoose.isValidObjectId(leccion_id)) {
-        return res.status(400).json({ success: false, message: "leccion_id invalido" });
-      }
-      const leccion = await Leccion.findById(leccion_id);
-      if (!leccion) {
-        return res.status(404).json({ success: false, message: "La leccion no existe" });
-      }
-      const Seccion = require("../models/Secciones");
-      const seccion = await Seccion.findById(leccion.seccionID);
-      if (!seccion || seccion.cursoID.toString() !== curso_id) {
-        return res.status(400).json({ success: false, message: "La leccion no pertenece al curso indicado" });
-      }
-    }
-
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
     const tieneComentario = typeof comentario === "string" && comentario.trim() !== "";
     const tieneCalificacion = typeof calificacion === "number" && !Number.isNaN(calificacion);
 
@@ -79,25 +58,10 @@ exports.createResena = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     if (tieneCalificacion) {
       const resenaConCalificacion = await Resena.findOne({
         estudiante_id: req.user.id,
         curso_id,
-=======
-    if (tieneCalificacion && !leccion_id) {
-      const resenaConCalificacion = await Resena.findOne({
-        estudiante_id: req.user.id,
-        curso_id,
-        leccion_id: null,
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
-    if (tieneCalificacion) {
-      const resenaConCalificacion = await Resena.findOne({
-        estudiante_id: req.user.id,
-        curso_id,
->>>>>>> parent of 50ab708 (Retoques)
         calificacion: { $ne: null }
       });
 
@@ -118,13 +82,6 @@ exports.createResena = async (req, res) => {
     const resena = new Resena({
       estudiante_id: req.user.id,
       curso_id,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      leccion_id: leccion_id || null,
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
       calificacion: tieneCalificacion ? calificacion : null,
       comentario: tieneComentario ? comentario.trim() : ""
     });

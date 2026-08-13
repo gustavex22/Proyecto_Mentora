@@ -206,15 +206,7 @@ export function CursoForm() {
               ))}
             </div>
             <div style={{ marginTop: 24 }}>
-<<<<<<< HEAD
-<<<<<<< HEAD
               <button className="btn-primary" type="button" onClick={() => navigate('/mis-cursos')}>Ir a mis cursos</button>
-=======
-              <button className="btn-primary" type="button" onClick={() => navigate('/dashboard')}>Ir al dashboard</button>
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
-              <button className="btn-primary" type="button" onClick={() => navigate('/mis-cursos')}>Ir a mis cursos</button>
->>>>>>> parent of 50ab708 (Retoques)
             </div>
           </>
         )}

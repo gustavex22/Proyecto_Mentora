@@ -1,13 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../Api/axios';
 import { imageUrl } from '../../utils';
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import { PLATFORMS, validateSocialUrl, normalizeRedes } from '../../utils/social';
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
 import './Perfil.css';
 
 export function Perfil() {

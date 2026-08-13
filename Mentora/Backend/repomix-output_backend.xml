@@ -1,0 +1,3317 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+controllers/
+  AuthController.js
+  CursosController.js
+  DashboardController.js
+  InscripcionesController.js
+  InstructoresController.js
+  LeccionesController.js
+  ResenasController.js
+  SeccionesController.js
+  UploadController.js
+  UsuariosController.js
+middlewares/
+  authMiddleware.js
+  roleMiddleware.js
+  uploadMiddleware.js
+models/
+  Cursos.js
+  Inscripciones.js
+  Lecciones.js
+  Reseñas.js
+  Secciones.js
+  Usuarios.js
+router/
+  Auth.js
+  Cursos.js
+  Dashboard.js
+  Inscripciones.js
+  Instructores.js
+  Lecciones.js
+  Resenas.js
+  Secciones.js
+  Uploads.js
+  Usuarios.js
+scripts/
+  migrateLegacyPasswords.js
+  verifyLegacyLogins.js
+uploads/
+  images/
+    23b57ddd86ce8b06bb543ecfb34dca02.jpg
+    47483951ab1850c3a411a407a86a5d32.jpg
+    508957e3cf40929f542bcfad6c4da394.jpg
+    7b6aea315c1cc87287eced595bc8e831.jpg
+    a83dbb3d597a9894a1696705b3d101f6.jpg
+    dcd94a238a07cf88086f17245f8b9efa.jpg
+.gitignore
+app.js
+constants.js
+index.js
+package.json
+seed.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="controllers/AuthController.js">
+const jwt = require("jsonwebtoken");
+const Usuario = require("../models/Usuarios");
+const { JWT_SECRET, JWT_EXPIRATION } = require('../constants');
+
+// Controlador de registro de nuevos usuarios
+exports.register = async (req, res) => {
+  try {
+    const { nombre,apellido, correo, password, rol } = req.body;
+
+    if (!nombre || !apellido || !correo || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nombre,,apellido, correo y contraseña son requeridos'
+      });
+    }
+
+    if (rol && !['instructor', 'estudiante'].includes(rol)) {
+      return res.status(400).json({
+        success: false,
+        message: "El rol debe ser 'instructor' o 'estudiante'"
+      });
+    }
+
+    const usuarioExistente = await Usuario.findOne({ correo: correo.toLowerCase() });
+    if (usuarioExistente) {
+      return res.status(400).json({
+        success: false,
+        message: 'El correo electrónico ya está registrado'
+      });
+    }
+
+    const usuario = new Usuario({
+      nombre,
+      apellido,
+      correo: correo.toLowerCase(),
+      password,
+      rol: rol || 'estudiante'
+    });
+
+    const savedUsuario = await usuario.save();
+
+    const token = jwt.sign(
+      { 
+        id: savedUsuario._id, 
+        correo: savedUsuario.correo, 
+        rol: savedUsuario.rol,
+        nombre: savedUsuario.nombre
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION }
+    );
+
+    const { password: _, ...usuarioData } = savedUsuario.toObject();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Usuario registrado exitosamente',
+      data: {
+        usuario: usuarioData,
+        token,
+        expiresIn: JWT_EXPIRATION
+      }
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El correo electrónico ya está registrado'
+      });
+    }
+    console.error('Error en registro:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};
+
+exports.login = async (req, res) => {
+  try {
+    const { correo, password } = req.body;
+
+    if (!correo || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Correo y contraseña son requeridos'
+      });
+    }
+
+    const usuario = await Usuario.findOne({ correo: correo.toLowerCase() });
+    
+    if (!usuario) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas'
+      });
+    }
+
+    if (!usuario.activo) {
+      return res.status(403).json({
+        success: false,
+        message: 'Usuario inactivo. Contacte al administrador'
+      });
+    }
+
+    const passwordValido = await usuario.compararPassword(password);
+    
+    if (!passwordValido) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas'
+      });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: usuario._id, 
+        correo: usuario.correo, 
+        rol: usuario.rol,
+        nombre: usuario.nombre
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION }
+    );
+
+    const { password: _, ...usuarioData } = usuario.toObject();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login exitoso',
+      data: {
+        usuario: usuarioData,
+        token,
+        expiresIn: JWT_EXPIRATION
+      }
+    });
+  } catch (error) {
+    console.error('Error en login:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};
+
+exports.getMe = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const usuario = await Usuario.findById(req.user.id).select('-password');
+    
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: usuario
+    });
+  } catch (error) {
+    console.error('Error al obtener usuario actual:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const usuario = await Usuario.findById(req.user.id);
+    
+    if (!usuario || !usuario.activo) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario no válido o inactivo'
+      });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: usuario._id, 
+        correo: usuario.correo, 
+        rol: usuario.rol,
+        nombre: usuario.nombre
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Token renovado exitosamente',
+      data: {
+        token,
+        expiresIn: JWT_EXPIRATION
+      }
+    });
+  } catch (error) {
+    console.error('Error al renovar token:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const camposPermitidos = ['nombre', 'biografia', 'foto', 'redes_sociales'];
+    const datosActualizar = {};
+    
+    for (const campo of camposPermitidos) {
+      if (req.body[campo] !== undefined) {
+        datosActualizar[campo] = req.body[campo];
+      }
+    }
+
+    if (req.body.correo) {
+      const usuarioConCorreo = await Usuario.findOne({
+        correo: req.body.correo.toLowerCase(),
+        _id: { $ne: req.user.id }
+      });
+      if (usuarioConCorreo) {
+        return res.status(400).json({
+          success: false,
+          message: 'El correo electrónico ya está registrado'
+        });
+      }
+      datosActualizar.correo = req.body.correo.toLowerCase();
+    }
+
+    if (Object.keys(datosActualizar).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se proporcionaron campos válidos para actualizar'
+      });
+    }
+
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      req.user.id,
+      datosActualizar,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Perfil actualizado exitosamente',
+      data: usuarioActualizado
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El correo electrónico ya está registrado'
+      });
+    }
+    console.error('Error al actualizar perfil:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error en el servidor',
+      error: error.message
+    });
+  }
+};
+</file>
+
+<file path="controllers/CursosController.js">
+const mongoose = require("mongoose");
+const Curso = require("../models/Cursos");
+const Seccion = require("../models/Secciones");
+const Leccion = require("../models/Lecciones");
+const Inscripcion = require("../models/Inscripciones");
+const Resena = require("../models/Reseñas");
+
+exports.createCurso = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    req.body.instructorID = req.user.id;
+
+    const imagen = req.body.imagen;
+    if (imagen && imagen.startsWith("data:")) {
+      const sizeInBytes = Buffer.byteLength(imagen, "base64");
+      if (sizeInBytes > 2 * 1024 * 1024) {
+        return res.status(413).json({
+          success: false,
+          message: "La imagen excede el tamaño máximo de 2MB"
+        });
+      }
+    }
+
+    const curso = new Curso(req.body);
+    const savedCurso = await curso.save();
+    return res.status(201).json({ success: true, curso: savedCurso });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getCursos = async (req, res) => {
+  try {
+    const { titulo, categoria, nivel, instructorID } = req.query;
+    const filter = {};
+
+    if (!req.user || req.user.rol !== "instructor") {
+      filter.publicado = true;
+    }
+
+    if (titulo) filter.titulo = { $regex: titulo, $options: "i" };
+    if (categoria) filter.categoria = { $regex: categoria, $options: "i" };
+    if (nivel) filter.nivel = nivel;
+    if (instructorID && mongoose.isValidObjectId(instructorID)) {
+      filter.instructorID = instructorID;
+    }
+
+    const cursos = await Curso.find(filter)
+      .populate("instructorID", "nombre foto")
+      .select("-__v");
+
+    // Estandarizar respuesta y asegurar que instructorID exista
+    const cursosEstandarizados = cursos.map(curso => ({
+      ...curso.toObject(),
+      instructorID: curso.instructorID ? {
+        _id: curso.instructorID._id,
+        nombre: curso.instructorID.nombre || 'Sin nombre',
+        foto: curso.instructorID.foto || null
+      } : null,
+      total_inscritos: curso.total_inscritos || 0,
+      calificacion_promedio: curso.calificacion_promedio || 0
+    }));
+
+    return res.status(200).json({ 
+      success: true, 
+      cursos: cursosEstandarizados,
+      message: "Cursos obtenidos exitosamente"
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getCursoById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const curso = await Curso.findById(id)
+      .populate("instructorID", "nombre biografia foto redes_sociales")
+      .lean();
+
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    // Solo mostrar error 404 si el curso no está publicado Y el usuario NO es el instructor dueño
+    const esInstructorDueño = req.user &&
+      curso.instructorID && 
+      curso.instructorID._id && 
+      curso.instructorID._id.toString() === req.user.id;
+    
+    if (!curso.publicado && !esInstructorDueño) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    const secciones = await Seccion.find({ cursoID: id })
+      .sort("orden")
+      .lean();
+
+    const seccionIds = secciones.map(s => s._id);
+    const lecciones = await Leccion.find({ seccionID: { $in: seccionIds } })
+      .sort("orden")
+      .lean();
+
+    const seccionesConLecciones = secciones.map(seccion => ({
+      ...seccion,
+      lecciones: lecciones.filter(l =>
+        l.seccionID.toString() === seccion._id.toString()
+      )
+    }));
+
+    // Estandarizar instructorID y asegurar que exista
+    const cursoEstandarizado = {
+      ...curso,
+      instructorID: curso.instructorID ? {
+        _id: curso.instructorID._id,
+        nombre: curso.instructorID.nombre || 'Sin nombre',
+        biografia: curso.instructorID.biografia || '',
+        foto: curso.instructorID.foto || null,
+        redes_sociales: curso.instructorID.redes_sociales || []
+      } : null,
+      secciones: seccionesConLecciones,
+      total_inscritos: curso.total_inscritos || 0,
+      calificacion_promedio: curso.calificacion_promedio || 0
+    };
+
+    return res.status(200).json({
+      success: true,
+      curso: cursoEstandarizado,
+      message: "Curso obtenido exitosamente"
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateCurso = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const curso = await Curso.findById(id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    // Comparación segura entre ObjectId y string (updateCurso)
+    const instructorIdStrUpdate = curso.instructorID ? curso.instructorID.toString() : null;
+    if (instructorIdStrUpdate !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede editar este curso"
+      });
+    }
+
+    const imagen = req.body.imagen;
+    if (imagen && imagen.startsWith("data:")) {
+      const sizeInBytes = Buffer.byteLength(imagen, "base64");
+      if (sizeInBytes > 2 * 1024 * 1024) {
+        return res.status(413).json({
+          success: false,
+          message: "La imagen excede el tamaño máximo de 2MB"
+        });
+      }
+    }
+
+    delete req.body.instructorID;
+
+    const updatedCurso = await Curso.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    return res.status(200).json({ success: true, curso: updatedCurso });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.togglePublicado = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const curso = await Curso.findById(id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    if (curso.instructorID.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede publicar/despublicar este curso"
+      });
+    }
+
+    curso.publicado = !curso.publicado;
+    await curso.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Curso ${curso.publicado ? "publicado" : "despublicado"} exitosamente`,
+      curso
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteCurso = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const curso = await Curso.findById(id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    if (curso.instructorID.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede eliminar este curso"
+      });
+    }
+
+    const secciones = await Seccion.find({ cursoID: id });
+    const seccionIds = secciones.map(s => s._id);
+
+    await Promise.all([
+      Leccion.deleteMany({ seccionID: { $in: seccionIds } }),
+      Seccion.deleteMany({ cursoID: id }),
+      Inscripcion.deleteMany({ curso_id: id }),
+      Resena.deleteMany({ curso_id: id }),
+    ]);
+
+    await Curso.findByIdAndDelete(id);
+
+    return res.status(200).json({ success: true, message: "Curso eliminado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/DashboardController.js">
+const Curso = require("../models/Cursos");
+
+exports.getDashboardInstructor = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const cursos = await Curso.find({ instructorID: req.user.id })
+      .select("titulo imagen nivel categoria precio publicado calificacion_promedio total_inscritos")
+      .sort("-createdAt");
+
+    // Manejar valores null/undefined en las propiedades de los cursos
+    const totalEstudiantes = cursos.reduce((sum, c) => sum + (c.total_inscritos || 0), 0);
+    const cursosConCalificacion = cursos.filter(c => typeof c.calificacion_promedio === 'number' && c.calificacion_promedio > 0);
+    const promedioGlobal = cursosConCalificacion.length > 0
+      ? Math.round((cursosConCalificacion.reduce((sum, c) => sum + c.calificacion_promedio, 0) / cursosConCalificacion.length) * 10) / 10
+      : 0;
+
+    return res.status(200).json({
+      success: true,
+      resumen: {
+        total_cursos: cursos.length,
+        cursos_publicados: cursos.filter(c => c.publicado).length,
+        total_estudiantes: totalEstudiantes,
+        calificacion_promedio_global: promedioGlobal
+      },
+      cursos: cursos.map(c => ({
+        ...c.toObject(),
+        total_inscritos: c.total_inscritos || 0,
+        calificacion_promedio: c.calificacion_promedio || 0
+      }))
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getDashboardEstudiante = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const Inscripcion = require("../models/Inscripciones");
+
+    const inscripciones = await Inscripcion.find({ estudiante_id: req.user.id })
+      .populate("curso_id", "titulo imagen nivel categoria precio instructorID")
+      .populate({
+        path: "curso_id",
+        populate: { path: "instructorID", select: "nombre foto" }
+      })
+      .select("curso_id porcentaje fecha_inscripcion progreso")
+      .sort("-fecha_inscripcion");
+
+    const totalCursos = inscripciones.length;
+    const cursosCompletados = inscripciones.filter(i => i.porcentaje === 100).length;
+    const progresoPromedio = totalCursos > 0
+      ? Math.round(inscripciones.reduce((sum, i) => sum + (i.porcentaje || 0), 0) / totalCursos)
+      : 0;
+
+    return res.status(200).json({
+      success: true,
+      resumen: {
+        total_cursos: totalCursos,
+        cursos_completados: cursosCompletados,
+        progreso_promedio: progresoPromedio
+      },
+      inscripciones: inscripciones.map(i => ({
+        ...i.toObject(),
+        porcentaje: i.porcentaje || 0
+      }))
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/InscripcionesController.js">
+const mongoose = require("mongoose");
+const Inscripcion = require("../models/Inscripciones");
+const Curso = require("../models/Cursos");
+const Leccion = require("../models/Lecciones");
+const Seccion = require("../models/Secciones");
+
+const crearInscripcion = async (estudiante_id, curso_id) => {
+  const secciones = await Seccion.find({ cursoID: curso_id });
+  const seccionIds = secciones.map(s => s._id);
+  const lecciones = await Leccion.find({ seccionID: { $in: seccionIds } }).sort("orden");
+  
+  const progreso = lecciones.map(l => ({
+    leccion_id: l._id,
+    completada: false
+  }));
+
+  const inscripcion = new Inscripcion({
+    estudiante_id,
+    curso_id,
+    progreso,
+    porcentaje: 0,
+    fecha_inscripcion: new Date()
+  });
+
+  await inscripcion.save();
+  await Curso.findByIdAndUpdate(curso_id, { $inc: { total_inscritos: 1 } });
+
+  return inscripcion;
+};
+
+exports.inscribir = async (req, res) => {
+  try {
+    const { curso_id } = req.body;
+    if (!curso_id) {
+      return res.status(400).json({ success: false, message: "El curso_id es requerido" });
+    }
+
+    const curso = await Curso.findById(curso_id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    if (!curso.publicado) {
+      return res.status(400).json({ success: false, message: "Este curso no está disponible" });
+    }
+
+    if (curso.precio > 0) {
+      return res.status(200).json({
+        success: true,
+        requiere_pago: true,
+        precio: curso.precio,
+        message: "Este curso requiere pago. Usa POST /Inscripciones/pagar con { curso_id } para completar la compra."
+      });
+    }
+
+    const yaInscrito = await Inscripcion.findOne({
+      estudiante_id: req.user.id,
+      curso_id
+    });
+    if (yaInscrito) {
+      return res.status(400).json({
+        success: false,
+        message: "Ya estás inscrito en este curso"
+      });
+    }
+
+    const inscripcion = await crearInscripcion(req.user.id, curso_id);
+
+    return res.status(201).json({
+      success: true,
+      message: "Inscripción exitosa",
+      inscripcion
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.pagarCurso = async (req, res) => {
+  try {
+    const { curso_id } = req.body;
+    if (!curso_id) {
+      return res.status(400).json({ success: false, message: "El curso_id es requerido" });
+    }
+
+    const curso = await Curso.findById(curso_id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    if (!curso.publicado) {
+      return res.status(400).json({ success: false, message: "Este curso no está disponible" });
+    }
+
+    if (curso.precio <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Este curso es gratuito. Usa POST /Inscripciones directamente."
+      });
+    }
+
+    const yaInscrito = await Inscripcion.findOne({
+      estudiante_id: req.user.id,
+      curso_id
+    });
+    if (yaInscrito) {
+      return res.status(400).json({
+        success: false,
+        message: "Ya estás inscrito en este curso"
+      });
+    }
+
+    const inscripcion = await crearInscripcion(req.user.id, curso_id);
+
+    return res.status(201).json({
+      success: true,
+      message: "Pago simulado exitosamente. Inscripción completada.",
+      inscripcion
+    });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getMisInscripciones = async (req, res) => {
+  try {
+    const inscripciones = await Inscripcion.find({ estudiante_id: req.user.id })
+      .populate("curso_id", "titulo imagen nivel categoria precio total_inscritos calificacion_promedio")
+      .populate("progreso.leccion_id", "titulo url")
+      .sort("-fecha_inscripcion");
+
+    // Estandarizar respuesta con total_estudiantes
+    const inscripcionesEstandarizadas = inscripciones.map(insc => ({
+      ...insc.toObject(),
+      curso_id: insc.curso_id ? {
+        ...insc.curso_id.toObject(),
+        total_estudiantes: insc.curso_id.total_inscritos || 0,
+        total_inscritos: insc.curso_id.total_inscritos || 0,
+        calificacion_promedio: insc.curso_id.calificacion_promedio || 0
+      } : null
+    }));
+
+    return res.status(200).json({ 
+      success: true, 
+      inscripciones: inscripcionesEstandarizadas,
+      total_estudiantes: inscripciones.length,
+      message: "Inscripciones obtenidas exitosamente"
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getInscripcionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const inscripcion = await Inscripcion.findById(id)
+      .populate("curso_id")
+      .populate("progreso.leccion_id", "titulo url");
+
+    if (!inscripcion) {
+      return res.status(404).json({ success: false, message: "Inscripción no encontrada" });
+    }
+
+    return res.status(200).json({ success: true, inscripcion });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.marcarLeccionCompletada = async (req, res) => {
+  try {
+    const { inscripcionId, leccionId } = req.params;
+
+    if (!mongoose.isValidObjectId(inscripcionId) || !mongoose.isValidObjectId(leccionId)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const inscripcion = await Inscripcion.findById(inscripcionId);
+    if (!inscripcion) {
+      return res.status(404).json({ success: false, message: "Inscripción no encontrada" });
+    }
+
+    if (inscripcion.estudiante_id.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes marcar tus propias lecciones"
+      });
+    }
+
+    const entry = inscripcion.progreso.find(
+      p => p.leccion_id.toString() === leccionId
+    );
+
+    if (!entry) {
+      return res.status(404).json({
+        success: false,
+        message: "Esta lección no pertenece a tu inscripción"
+      });
+    }
+
+    entry.completada = true;
+
+    const total = inscripcion.progreso.length;
+    const completadas = inscripcion.progreso.filter(p => p.completada).length;
+    inscripcion.porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
+
+    await inscripcion.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Lección marcada como completada",
+      inscripcion
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getInscritosPorCurso = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const curso = await Curso.findById(id);
+    if (!curso) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+
+    if (curso.instructorID.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes ver los inscritos de tus propios cursos"
+      });
+    }
+
+    const inscripciones = await Inscripcion.find({ curso_id: id })
+      .populate("estudiante_id", "nombre correo foto")
+      .select("estudiante_id fecha_inscripcion porcentaje");
+
+    return res.status(200).json({
+      success: true,
+      total: inscripciones.length,
+      inscritos: inscripciones
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteInscripcion = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const inscripcion = await Inscripcion.findById(id);
+    if (!inscripcion) {
+      return res.status(404).json({ success: false, message: "Inscripción no encontrada" });
+    }
+
+    if (inscripcion.estudiante_id.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes eliminar tus propias inscripciones"
+      });
+    }
+
+    await Curso.findByIdAndUpdate(inscripcion.curso_id, {
+      $inc: { total_inscritos: -1 }
+    });
+
+    await Inscripcion.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Inscripción eliminada correctamente"
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/InstructoresController.js">
+const mongoose = require("mongoose");
+const Usuario = require("../models/Usuarios");
+
+exports.getInstructorPublico = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const user = await Usuario.findById(id);
+    if (!user || user.rol !== "instructor") {
+      return res.status(404).json({ success: false, message: "Instructor no encontrado" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      instructor: {
+        _id: user._id,
+        nombre: user.nombre,
+        apellido: user.apellido,
+        biografia: user.biografia || "",
+        foto: user.foto || null,
+        redes_sociales: user.redes_sociales || []
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/LeccionesController.js">
+const mongoose = require("mongoose");
+const Leccion = require("../models/Lecciones");
+const Seccion = require("../models/Secciones");
+const Curso = require("../models/Cursos");
+const Inscripcion = require("../models/Inscripciones");
+
+const YOUTUBE_REGEX = /^https?:\/\/(www\.)?(youtube\.com\/watch\?v=[\w-]{11}|youtu\.be\/[\w-]{11})([\?&].*)?$/;
+const VIMEO_REGEX = /^https?:\/\/(www\.)?vimeo\.com\/\d+([\?&].*)?$/;
+
+const validarUrlVideo = (url) => YOUTUBE_REGEX.test(url) || VIMEO_REGEX.test(url);
+
+const verificarInstructorDueñoDeSeccion = async (seccionID, userId) => {
+  const seccion = await Seccion.findById(seccionID);
+  if (!seccion) return null;
+  const curso = await Curso.findById(seccion.cursoID);
+  if (!curso) return null;
+  // Comparación segura entre ObjectId y string
+  const instructorIdStr = curso.instructorID ? curso.instructorID.toString() : null;
+  if (instructorIdStr !== userId) return false;
+  return { seccion, curso };
+};
+
+exports.createLeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { seccionID, url } = req.body;
+    if (!seccionID) {
+      return res.status(400).json({ success: false, message: "El seccionID es requerido" });
+    }
+    if (!url) {
+      return res.status(400).json({ success: false, message: "La URL del video es requerida" });
+    }
+
+    if (!validarUrlVideo(url)) {
+      return res.status(400).json({
+        success: false,
+        message: "URL de video inválida. Debe ser YouTube (youtube.com/watch?v=ID o youtu.be/ID) o Vimeo (vimeo.com/ID)."
+      });
+    }
+
+    const resultado = await verificarInstructorDueñoDeSeccion(seccionID, req.user.id);
+    if (resultado === null) {
+      return res.status(404).json({ success: false, message: "Sección no encontrada" });
+    }
+    if (resultado === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño del curso puede agregar lecciones"
+      });
+    }
+
+    const leccion = new Leccion(req.body);
+    const savedLeccion = await leccion.save();
+
+    await Inscripcion.updateMany(
+      { curso_id: resultado.curso._id },
+      { $push: { progreso: { leccion_id: savedLeccion._id, completada: false } } }
+    );
+
+    return res.status(201).json({ success: true, leccion: savedLeccion });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getLecciones = async (req, res) => {
+  try {
+    const filter = req.query.seccionID ? { seccionID: req.query.seccionID } : {};
+    const lecciones = await Leccion.find(filter).sort("orden");
+    return res.status(200).json({ success: true, lecciones });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getLeccionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const leccion = await Leccion.findById(id);
+    if (!leccion) {
+      return res.status(404).json({ success: false, message: "Lección no encontrada" });
+    }
+
+    return res.status(200).json({ success: true, leccion });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateLeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const leccion = await Leccion.findById(id);
+    if (!leccion) {
+      return res.status(404).json({ success: false, message: "Lección no encontrada" });
+    }
+
+    if (req.body.url && !validarUrlVideo(req.body.url)) {
+      return res.status(400).json({
+        success: false,
+        message: "URL de video inválida. Debe ser YouTube (youtube.com/watch?v=ID o youtu.be/ID) o Vimeo (vimeo.com/ID)."
+      });
+    }
+
+    const resultado = await verificarInstructorDueñoDeSeccion(
+      leccion.seccionID.toString(),
+      req.user.id
+    );
+    if (resultado === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede modificar esta lección"
+      });
+    }
+
+    delete req.body.seccionID;
+
+    const updatedLeccion = await Leccion.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    return res.status(200).json({ success: true, leccion: updatedLeccion });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteLeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const leccion = await Leccion.findById(id);
+    if (!leccion) {
+      return res.status(404).json({ success: false, message: "Lección no encontrada" });
+    }
+
+    const resultado = await verificarInstructorDueñoDeSeccion(
+      leccion.seccionID.toString(),
+      req.user.id
+    );
+    if (resultado === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede eliminar esta lección"
+      });
+    }
+
+    await Inscripcion.updateMany(
+      { curso_id: resultado.curso._id },
+      { $pull: { progreso: { leccion_id: id } } }
+    );
+
+    await Leccion.findByIdAndDelete(id);
+
+    return res.status(200).json({ success: true, message: "Lección eliminada correctamente" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/ResenasController.js">
+const mongoose = require("mongoose");
+const Resena = require("../models/Reseñas");
+const Curso = require("../models/Cursos");
+const Inscripcion = require("../models/Inscripciones");
+
+const recalcularPromedio = async (curso_id) => {
+  const resultado = await Resena.aggregate([
+    {
+      $match: {
+        curso_id: new mongoose.Types.ObjectId(curso_id),
+        calificacion: { $ne: null }
+      }
+    },
+    { $group: { _id: null, promedio: { $avg: "$calificacion" } } }
+  ]);
+  const promedio = resultado[0]?.promedio
+    ? Math.round(resultado[0].promedio * 10) / 10
+    : 0;
+  await Curso.findByIdAndUpdate(curso_id, { calificacion_promedio: promedio });
+};
+
+exports.createResena = async (req, res) => {
+  try {
+    const { curso_id, calificacion, comentario } = req.body;
+
+    if (!curso_id) {
+      return res.status(400).json({
+        success: false,
+        message: "curso_id es requerido"
+      });
+    }
+
+    const tieneComentario = typeof comentario === "string" && comentario.trim() !== "";
+    const tieneCalificacion = typeof calificacion === "number" && !Number.isNaN(calificacion);
+
+    if (!tieneComentario && !tieneCalificacion) {
+      return res.status(400).json({
+        success: false,
+        message: "Debes enviar al menos un comentario o una calificacion"
+      });
+    }
+
+    if (tieneCalificacion && (calificacion < 1 || calificacion > 5)) {
+      return res.status(400).json({
+        success: false,
+        message: "La calificacion debe estar entre 1 y 5"
+      });
+    }
+
+    const inscripcion = await Inscripcion.findOne({
+      estudiante_id: req.user.id,
+      curso_id
+    });
+    if (!inscripcion) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo los estudiantes inscritos pueden dejar una resena"
+      });
+    }
+
+    if (tieneCalificacion) {
+      const resenaConCalificacion = await Resena.findOne({
+        estudiante_id: req.user.id,
+        curso_id,
+        calificacion: { $ne: null }
+      });
+
+      if (resenaConCalificacion) {
+        const actualizada = await Resena.findByIdAndUpdate(
+          resenaConCalificacion._id,
+          {
+            calificacion,
+            ...(tieneComentario ? { comentario: comentario.trim() } : {})
+          },
+          { new: true, runValidators: true }
+        );
+        await recalcularPromedio(curso_id);
+        return res.status(200).json({ success: true, resena: actualizada });
+      }
+    }
+
+    const resena = new Resena({
+      estudiante_id: req.user.id,
+      curso_id,
+      calificacion: tieneCalificacion ? calificacion : null,
+      comentario: tieneComentario ? comentario.trim() : ""
+    });
+
+    const savedResena = await resena.save();
+    await recalcularPromedio(curso_id);
+
+    return res.status(201).json({ success: true, resena: savedResena });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getResenasByCurso = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const resenas = await Resena.find({ curso_id: id })
+      .populate("estudiante_id", "nombre foto")
+      .sort("-createdAt");
+
+    return res.status(200).json({ success: true, resenas });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getResenaById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const resena = await Resena.findById(id)
+      .populate("estudiante_id", "nombre foto");
+    if (!resena) {
+      return res.status(404).json({ success: false, message: "Reseña no encontrada" });
+    }
+
+    return res.status(200).json({ success: true, resena });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateResena = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const resena = await Resena.findById(id);
+    if (!resena) {
+      return res.status(404).json({ success: false, message: "Reseña no encontrada" });
+    }
+
+    if (resena.estudiante_id.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes modificar tus propias reseñas"
+      });
+    }
+
+    const { calificacion, comentario } = req.body;
+
+    if (calificacion !== undefined && calificacion !== null) {
+      if (typeof calificacion !== "number" || calificacion < 1 || calificacion > 5) {
+        return res.status(400).json({
+          success: false,
+          message: "La calificacion debe estar entre 1 y 5"
+        });
+      }
+    }
+
+    delete req.body.estudiante_id;
+    delete req.body.curso_id;
+
+    const campos = {};
+    if (calificacion !== undefined) campos.calificacion = calificacion;
+    if (typeof comentario === "string") campos.comentario = comentario.trim();
+
+    const updatedResena = await Resena.findByIdAndUpdate(id, campos, {
+      new: true,
+      runValidators: true,
+    });
+
+    await recalcularPromedio(resena.curso_id);
+
+    return res.status(200).json({ success: true, resena: updatedResena });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteResena = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const resena = await Resena.findById(id);
+    if (!resena) {
+      return res.status(404).json({ success: false, message: "Reseña no encontrada" });
+    }
+
+    if (resena.estudiante_id.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes eliminar tus propias reseñas"
+      });
+    }
+
+    const curso_id = resena.curso_id;
+    await Resena.findByIdAndDelete(id);
+
+    await recalcularPromedio(curso_id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Reseña eliminada correctamente"
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/SeccionesController.js">
+const mongoose = require("mongoose");
+const Seccion = require("../models/Secciones");
+const Curso = require("../models/Cursos");
+const Leccion = require("../models/Lecciones");
+
+const verificarInstructorDueño = async (cursoID, userId) => {
+  const curso = await Curso.findById(cursoID);
+  if (!curso) return null;
+  // Comparación segura entre ObjectId y string
+  const instructorIdStr = curso.instructorID ? curso.instructorID.toString() : null;
+  if (instructorIdStr !== userId) return false;
+  return curso;
+};
+
+exports.createSeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { cursoID } = req.body;
+    if (!cursoID) {
+      return res.status(400).json({ success: false, message: "El cursoID es requerido" });
+    }
+
+    const curso = await verificarInstructorDueño(cursoID, req.user.id);
+    if (curso === null) {
+      return res.status(404).json({ success: false, message: "Curso no encontrado" });
+    }
+    if (curso === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño del curso puede agregar secciones"
+      });
+    }
+
+    const seccion = new Seccion(req.body);
+    const savedSeccion = await seccion.save();
+    return res.status(201).json({ success: true, seccion: savedSeccion });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getSecciones = async (req, res) => {
+  try {
+    const filter = req.query.cursoID ? { cursoID: req.query.cursoID } : {};
+    const secciones = await Seccion.find(filter).sort("orden");
+    return res.status(200).json({ success: true, secciones });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getSeccionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const seccion = await Seccion.findById(id);
+    if (!seccion) {
+      return res.status(404).json({ success: false, message: "Sección no encontrada" });
+    }
+
+    const lecciones = await Leccion.find({ seccionID: id }).sort("orden");
+
+    return res.status(200).json({ success: true, seccion: { ...seccion.toObject(), lecciones } });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateSeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const seccion = await Seccion.findById(id);
+    if (!seccion) {
+      return res.status(404).json({ success: false, message: "Sección no encontrada" });
+    }
+
+    const curso = await verificarInstructorDueño(seccion.cursoID.toString(), req.user.id);
+    if (curso === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede modificar esta sección"
+      });
+    }
+
+    delete req.body.cursoID;
+
+    const updatedSeccion = await Seccion.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    return res.status(200).json({ success: true, seccion: updatedSeccion });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteSeccion = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const seccion = await Seccion.findById(id);
+    if (!seccion) {
+      return res.status(404).json({ success: false, message: "Sección no encontrada" });
+    }
+
+    const curso = await verificarInstructorDueño(seccion.cursoID.toString(), req.user.id);
+    if (curso === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Solo el instructor dueño puede eliminar esta sección"
+      });
+    }
+
+    await Leccion.deleteMany({ seccionID: id });
+    await Seccion.findByIdAndDelete(id);
+
+    return res.status(200).json({ success: true, message: "Sección eliminada correctamente" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="controllers/UploadController.js">
+const path = require("path");
+const fs = require("fs");
+const Usuario = require("../models/Usuarios");
+const Curso = require("../models/Cursos");
+
+exports.subirFotoPerfil = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No se envió ningún archivo"
+      });
+    }
+
+    const url = `/images/${req.file.filename}`;
+
+    const usuario = await Usuario.findById(req.user.id);
+    if (!usuario) {
+      fs.unlinkSync(req.file.path);
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado"
+      });
+    }
+
+    const fotoAnterior = usuario.foto;
+
+    usuario.foto = url;
+    await usuario.save();
+
+    if (fotoAnterior && fotoAnterior.startsWith("/images/")) {
+      const filename = fotoAnterior.replace("/images/", "");
+      const oldPath = path.join(__dirname, "..", "uploads", "images", filename);
+      fs.unlink(oldPath, (err) => {
+        if (err && err.code !== "ENOENT") {
+          console.error("Error al eliminar foto anterior:", err);
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Foto de perfil actualizada correctamente",
+      url,
+      usuario: {
+        _id: usuario._id,
+        nombre: usuario.nombre,
+        foto: usuario.foto
+      }
+    });
+  } catch (error) {
+    if (req.file) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Error al subir foto de perfil",
+      error: error.message
+    });
+  }
+};
+
+exports.subirPortadaCurso = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No se envió ningún archivo"
+      });
+    }
+
+    const url = `/images/${req.file.filename}`;
+
+    return res.status(200).json({
+      success: true,
+      message: "Imagen subida correctamente. Usa esta URL en el campo 'imagen' del curso.",
+      url
+    });
+  } catch (error) {
+    if (req.file) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Error al subir imagen",
+      error: error.message
+    });
+  }
+};
+
+exports.eliminarArchivo = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { filename } = req.params;
+
+    if (!filename) {
+      return res.status(400).json({
+        success: false,
+        message: "Nombre de archivo requerido"
+      });
+    }
+
+    const url = `/images/${filename}`;
+
+    const esMiFoto = await Usuario.findOne({ _id: req.user.id, foto: url });
+    const esMiPortada = await Curso.findOne({ instructorID: req.user.id, imagen: url });
+
+    if (!esMiFoto && !esMiPortada) {
+      return res.status(403).json({
+        success: false,
+        message: "No tienes permiso para eliminar este archivo"
+      });
+    }
+
+    const filePath = path.join(__dirname, "..", "uploads", "images", filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: "Archivo no encontrado"
+      });
+    }
+
+    fs.unlinkSync(filePath);
+
+    if (esMiFoto) {
+      await Usuario.findByIdAndUpdate(req.user.id, { foto: null });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Archivo eliminado correctamente"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al eliminar archivo",
+      error: error.message
+    });
+  }
+};
+</file>
+
+<file path="controllers/UsuariosController.js">
+const mongoose = require("mongoose");
+const Usuario = require("../models/Usuarios");
+
+exports.createUser = async (req, res) => {
+  try {
+    const { nombre, correo, password, rol } = req.body;
+
+    if (!nombre || !correo || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Nombre, correo y contraseña son requeridos"
+      });
+    }
+
+    if (rol && !["instructor", "estudiante"].includes(rol)) {
+      return res.status(400).json({
+        success: false,
+        message: "El rol debe ser 'instructor' o 'estudiante'"
+      });
+    }
+
+    const usuarioExistente = await Usuario.findOne({ correo: correo.toLowerCase() });
+    if (usuarioExistente) {
+      return res.status(400).json({
+        success: false,
+        message: "El correo electrónico ya está registrado"
+      });
+    }
+
+    const user = new Usuario(req.body);
+    const savedUser = await user.save();
+
+    const { password: _, ...usuarioData } = savedUser.toObject();
+
+    return res.status(201).json({
+      success: true,
+      message: "Usuario registrado exitosamente",
+      user: usuarioData
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "El correo electrónico ya está registrado"
+      });
+    }
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await Usuario.find().select("-password");
+    return res.status(200).json({ success: true, users });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const user = await Usuario.findById(id).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json({ success: true, user });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado'
+      });
+    }
+    
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    // Comparación segura entre ObjectId y string
+    const userIdStr = req.user.id.toString();
+    if (userIdStr !== id && req.user.rol !== 'instructor') {
+      return res.status(403).json({
+        success: false,
+        message: "Solo puedes editar tu propio perfil"
+      });
+    }
+
+    if (req.body.correo) {
+      const usuarioConCorreo = await Usuario.findOne({
+        correo: req.body.correo.toLowerCase(),
+        _id: { $ne: id }
+      });
+      if (usuarioConCorreo) {
+        return res.status(400).json({
+          success: false,
+          message: "El correo electrónico ya está registrado"
+        });
+      }
+    }
+
+    const updatedUser = await Usuario.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json({ success: true, user: updatedUser });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "ID inválido" });
+    }
+
+    const deletedUser = await Usuario.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json({ success: true, message: "Usuario eliminado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+</file>
+
+<file path="middlewares/authMiddleware.js">
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRATION } = require('../constants');
+
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: 'No se proporcionó token de autenticación'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido o mal formado'
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    req.user = decoded;
+    
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token expirado. Por favor inicia sesión nuevamente'
+      });
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido'
+      });
+    }
+    
+    return res.status(500).json({
+      success: false,
+      message: 'Error en la autenticación',
+      error: error.message
+    });
+  }
+};
+
+module.exports = authMiddleware;
+</file>
+
+<file path="middlewares/roleMiddleware.js">
+const authMiddleware = require('./authMiddleware');
+
+const checkRoles = (rolesPermitidos) => {
+
+  if (!Array.isArray(rolesPermitidos) || rolesPermitidos.length === 0) {
+    throw new Error('rolesPermitidos debe ser un array no vacío de roles');
+  }
+
+  return (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Usuario no autenticado'
+        });
+      }
+
+      const rolUsuario = req.user.rol;
+
+      if (!rolesPermitidos.includes(rolUsuario)) {
+        return res.status(403).json({
+          success: false,
+          message: `Acceso denegado. Se requiere uno de los siguientes roles: ${rolesPermitidos.join(', ')}`,
+          tuRol: rolUsuario
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Error en checkRoles:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error en la verificación de roles',
+        error: error.message
+      });
+    }
+  };
+};
+
+const esInstructor = checkRoles(['instructor']);
+const esEstudiante = checkRoles(['estudiante']);
+const esInstructorOEstudiante = checkRoles(['instructor', 'estudiante']);
+
+module.exports = {
+  checkRoles,
+  esInstructor,
+  esEstudiante,
+  esInstructorOEstudiante
+};
+</file>
+
+<file path="middlewares/uploadMiddleware.js">
+const multer = require("multer");
+const path = require("path");
+const crypto = require("crypto");
+const fs = require("fs");
+
+const uploadDir = path.join(__dirname, "..", "uploads", "images");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    crypto.randomBytes(16, (err, buf) => {
+      if (err) return cb(err);
+      cb(null, buf.toString("hex") + path.extname(file.originalname).toLowerCase());
+    });
+  }
+});
+
+const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+const fileFilter = (req, file, cb) => {
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    return cb(new Error("Solo se permiten imágenes (JPG, JPEG, PNG, WEBP, GIF)"), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }
+});
+
+const handleUpload = (fieldName) => (req, res, next) => {
+  upload.single(fieldName)(req, res, (err) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({
+          success: false,
+          message: "La imagen excede el tamaño máximo de 2MB"
+        });
+      }
+      return res.status(400).json({ success: false, message: err.message });
+    }
+    next();
+  });
+};
+
+module.exports = { upload, handleUpload };
+</file>
+
+<file path="models/Cursos.js">
+const mongoose = require("mongoose");
+
+// Middleware pre-save para asegurar valores por defecto
+const cursos = new mongoose.Schema(
+  {
+    instructorID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Usuario',
+      required: [true, 'El curso debe tener un instructor asignado.'],
+      validate: {
+        validator: async function(valorId) {
+            const usuario = await mongoose.model('Usuario').findById(valorId);
+            return usuario && usuario.rol === 'instructor';
+        },
+      message: 'El ID proporcionado no pertenece a un usuario con el rol de "instructor".'
+    }
+        },
+    titulo: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    descripcion: {
+      type: String,
+      default: ""
+    },
+    categoria: {
+      type: String,
+      default: ""
+    },
+    nivel: {
+      type: String,
+      enum: ["principiante", "intermedio", "avanzado"],
+      default: "principiante"
+    },
+    precio: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    imagen: {
+      type: String,
+      default: ""
+    },
+    publicado: {
+      type: Boolean,
+      default: false
+    },
+    calificacion_promedio: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    total_inscritos: {
+      type: Number,
+      default: 0,
+      min: 0
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Asegurar que los campos numéricos siempre tengan valor
+cursos.pre('save', function(next) {
+  if (this.calificacion_promedio === undefined || this.calificacion_promedio === null) {
+    this.calificacion_promedio = 0;
+  }
+  if (this.total_inscritos === undefined || this.total_inscritos === null) {
+    this.total_inscritos = 0;
+  }
+  next();
+});
+
+module.exports = mongoose.model("Curso", cursos);
+</file>
+
+<file path="models/Inscripciones.js">
+const mongoose = require('mongoose');
+const progreso = new mongoose.Schema({
+  leccion_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Leccion', 
+    required: [true, 'El ID de la lección es obligatorio.']
+  },
+  completada: {
+    type: Boolean,
+    default: false
+  }
+}, { _id: false });
+
+
+const inscripciones = new mongoose.Schema({
+  estudiante_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario',
+    required: [true, 'El ID del estudiante es obligatorio.'],
+    validate: {
+      validator: async function(valorId) {
+        const usuario = await mongoose.model('Usuario').findById(valorId);
+        return usuario && usuario.rol === 'estudiante';
+      },
+      message: 'El ID proporcionado no pertenece a un usuario con el rol de "estudiante".'
+    }
+  },
+  curso_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Curso',
+    required: [true, 'El ID del curso es obligatorio.']
+  },
+
+  progreso: [progreso], 
+  porcentaje: {
+    type: Number,
+    default: 0,
+    min: [0, 'El porcentaje no puede ser menor a 0.'],
+    max: [100, 'El porcentaje no puede ser mayor a 100.']
+  },
+  fecha_inscripcion: {
+    type: Date,
+    default: Date.now 
+  }
+});
+
+
+const Inscripcion = mongoose.model('Inscripciones', inscripciones);
+module.exports = Inscripcion;
+</file>
+
+<file path="models/Lecciones.js">
+const mongoose = require("mongoose");
+const lecciones = new mongoose.Schema(
+  {
+    seccionID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Seccion',
+      required: true
+    },
+    titulo: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    descripcion: {
+      type: String,
+      trim:true
+    },
+    url:{
+        type:String,
+        required: true,
+        trim:true
+    },
+    duracion:{
+        type:Number,
+        default: 0,
+        min: 0
+    },
+    orden:{
+        type: Number,
+        default: 0,
+        min: 0
+    }
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Leccion", lecciones);
+</file>
+
+<file path="models/Reseñas.js">
+const mongoose = require('mongoose');
+
+const resenas = new mongoose.Schema({
+  estudiante_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario',
+    required: [true, 'El ID del estudiante es obligatorio.'],
+    validate: {
+      validator: async function(valorId) {
+        const usuario = await mongoose.model('Usuario').findById(valorId);
+        return usuario && usuario.rol === 'estudiante';
+      },
+      message: 'El ID proporcionado no pertenece a un usuario con el rol de "estudiante".'
+    }
+  },
+  curso_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Curso',
+    required: [true, 'El ID del curso es obligatorio.']
+  },
+  calificacion: {
+    type: Number,
+    required: false,
+    default: null,
+    min: [1, 'La calificación mínima es 1.'],
+    max: [5, 'La calificación máxima es 5.']
+  },
+  comentario: {
+    type: String,
+    trim: true,
+    default: ''
+  }
+}, {
+  timestamps: true 
+});
+
+
+const Resena = mongoose.model('Resenas', resenas);
+module.exports = Resena;
+</file>
+
+<file path="models/Secciones.js">
+const mongoose = require("mongoose");
+const secciones = new mongoose.Schema(
+  {
+    cursoID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Curso',
+      required: true
+    },
+    titulo: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    orden: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Seccion", secciones);
+</file>
+
+<file path="models/Usuarios.js">
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+
+const usuario = new mongoose.Schema(
+  {
+    nombre: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    apellido:{
+      type: String,
+      required: true,
+      trim: true
+    },
+    correo: {
+      type: String,
+      required:true,
+      unique:true,
+      lowercase:true,
+      trim: true
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6
+    },
+    rol: {
+      type: String,
+      enum: ["instructor","estudiante"],
+      default: "estudiante"
+    },
+    biografia: {
+      type: String,
+      default : ""
+    },
+    foto:{
+        type: String,
+        default: null
+    },
+    redes_sociales:
+    {
+      type: [String],
+      default: []
+    },
+    activo:{
+        type: Boolean,
+        default: true
+    },
+    createdAT:{
+        type: Date,
+        default: Date.now
+    }
+
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Encriptar contraseña antes de guardar
+usuario.pre("save", async function(next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Método para comparar contraseñas
+usuario.methods.compararPassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+module.exports = mongoose.model("Usuario", usuario);
+</file>
+
+<file path="router/Auth.js">
+const express = require("express");
+const { register, login, getMe, refreshToken, updateProfile } = require("../controllers/AuthController");
+const authMiddleware = require("../middlewares/authMiddleware");
+
+const api = express.Router();
+
+api.post("/auth/register", register);
+api.post("/auth/login", login);
+api.get("/auth/me", authMiddleware, getMe);
+api.post("/auth/refresh", authMiddleware, refreshToken);
+api.put("/auth/profile", authMiddleware, updateProfile);
+
+module.exports = api;
+</file>
+
+<file path="router/Cursos.js">
+const express = require("express");
+const CursosController = require("../controllers/CursosController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Cursos", authMiddleware, esInstructor, CursosController.createCurso);
+api.get("/Cursos", CursosController.getCursos);
+api.get("/Cursos/:id", CursosController.getCursoById);
+api.put("/Cursos/:id", authMiddleware, esInstructor, CursosController.updateCurso);
+api.patch("/Cursos/:id/publicar", authMiddleware, esInstructor, CursosController.togglePublicado);
+api.delete("/Cursos/:id", authMiddleware, esInstructor, CursosController.deleteCurso);
+
+module.exports = api;
+</file>
+
+<file path="router/Dashboard.js">
+const express = require("express");
+const DashboardController = require("../controllers/DashboardController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor, esEstudiante } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.get("/Dashboard/instructor", authMiddleware, esInstructor, DashboardController.getDashboardInstructor);
+api.get("/Dashboard/estudiante", authMiddleware, esEstudiante, DashboardController.getDashboardEstudiante);
+
+module.exports = api;
+</file>
+
+<file path="router/Inscripciones.js">
+const express = require("express");
+const InscripcionesController = require("../controllers/InscripcionesController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esEstudiante, esInstructor } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Inscripciones", authMiddleware, esEstudiante, InscripcionesController.inscribir);
+api.get("/Inscripciones/mis-cursos", authMiddleware, InscripcionesController.getMisInscripciones);
+api.get("/Inscripciones/:id", authMiddleware, InscripcionesController.getInscripcionById);
+api.patch("/Inscripciones/:inscripcionId/lecciones/:leccionId", authMiddleware, esEstudiante, InscripcionesController.marcarLeccionCompletada);
+api.get("/Cursos/:id/inscritos", authMiddleware, esInstructor, InscripcionesController.getInscritosPorCurso);
+api.delete("/Inscripciones/:id", authMiddleware, esEstudiante, InscripcionesController.deleteInscripcion);
+api.post("/Inscripciones/pagar", authMiddleware, esEstudiante, InscripcionesController.pagarCurso);
+
+module.exports = api;
+</file>
+
+<file path="router/Instructores.js">
+const express = require("express");
+const InstructoresController = require("../controllers/InstructoresController");
+
+const api = express.Router();
+
+api.get("/Instructores/:id", InstructoresController.getInstructorPublico);
+
+module.exports = api;
+</file>
+
+<file path="router/Lecciones.js">
+const express = require("express");
+const LeccionesController = require("../controllers/LeccionesController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Lecciones", authMiddleware, esInstructor, LeccionesController.createLeccion);
+api.get("/Lecciones", LeccionesController.getLecciones);
+api.get("/Lecciones/:id", LeccionesController.getLeccionById);
+api.put("/Lecciones/:id", authMiddleware, esInstructor, LeccionesController.updateLeccion);
+api.delete("/Lecciones/:id", authMiddleware, esInstructor, LeccionesController.deleteLeccion);
+
+module.exports = api;
+</file>
+
+<file path="router/Resenas.js">
+const express = require("express");
+const ResenasController = require("../controllers/ResenasController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esEstudiante, esInstructorOEstudiante } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Resenas", authMiddleware, esEstudiante, ResenasController.createResena);
+api.get("/Cursos/:id/resenas", ResenasController.getResenasByCurso);
+api.get("/Resenas/:id", ResenasController.getResenaById);
+api.put("/Resenas/:id", authMiddleware, esInstructorOEstudiante, ResenasController.updateResena);
+api.delete("/Resenas/:id", authMiddleware, esInstructorOEstudiante, ResenasController.deleteResena);
+
+module.exports = api;
+</file>
+
+<file path="router/Secciones.js">
+const express = require("express");
+const SeccionesController = require("../controllers/SeccionesController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Secciones", authMiddleware, esInstructor, SeccionesController.createSeccion);
+api.get("/Secciones", SeccionesController.getSecciones);
+api.get("/Secciones/:id", SeccionesController.getSeccionById);
+api.put("/Secciones/:id", authMiddleware, esInstructor, SeccionesController.updateSeccion);
+api.delete("/Secciones/:id", authMiddleware, esInstructor, SeccionesController.deleteSeccion);
+
+module.exports = api;
+</file>
+
+<file path="router/Uploads.js">
+const express = require("express");
+const { handleUpload } = require("../middlewares/uploadMiddleware");
+const UploadController = require("../controllers/UploadController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor, esInstructorOEstudiante } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/uploads/profile-photo", authMiddleware, esInstructorOEstudiante, handleUpload("foto"), UploadController.subirFotoPerfil);
+api.post("/uploads/course-cover", authMiddleware, esInstructor, handleUpload("imagen"), UploadController.subirPortadaCurso);
+api.delete("/uploads/:filename", authMiddleware, esInstructorOEstudiante, UploadController.eliminarArchivo);
+
+module.exports = api;
+</file>
+
+<file path="router/Usuarios.js">
+const express = require("express");
+const UsuariosController = require("../controllers/UsuariosController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { esInstructor, esEstudiante } = require("../middlewares/roleMiddleware");
+
+const api = express.Router();
+
+api.post("/Usuarios", authMiddleware, esInstructor, UsuariosController.createUser);
+api.get("/Usuarios", authMiddleware, UsuariosController.getUsers);
+api.get("/Usuarios/:id", authMiddleware, UsuariosController.getUserById);
+api.put("/Usuarios/:id", authMiddleware, UsuariosController.updateUser);
+api.delete("/Usuarios/:id", authMiddleware, esInstructor, UsuariosController.deleteUser);
+
+module.exports = api;
+</file>
+
+<file path="scripts/migrateLegacyPasswords.js">
+const mongoose = require('mongoose');
+const Usuario = require('../models/Usuarios');
+const { DB_USER, DB_PASSWORD, DB_HOST } = require('../constants');
+
+const TARGETS = [
+  {
+    id: '6a2b38f592e40d4f67f3e402',
+    plainPassword: 'passwordUltraSeguro123'
+  },
+  {
+    id: '6a2c29e6e5fa86af65f96813',
+    plainPassword: 'passwordSeguro123'
+  },
+  {
+    id: '6a2c350fa580e500c769971d',
+    plainPassword: 'passwordSeguro123'
+  }
+];
+
+function buildMongoUri() {
+  const DB_NAME = process.env.DB_NAME || 'Mentora_db';
+  const DB_HOST_CLEAN = (DB_HOST || '')
+    .replace(/\/.*$/, '')
+    .replace(/\?.*$/, '');
+  const DB_OPTIONS = process.env.DB_OPTIONS ||
+    'ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0';
+
+  return process.env.MONGO_URI ||
+    `mongodb://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST_CLEAN}/${DB_NAME}?${DB_OPTIONS}&retryWrites=true&w=majority`;
+}
+
+async function migrateLegacyPasswords() {
+  const uri = buildMongoUri();
+  console.log('Conectando a:', uri);
+
+  await mongoose.connect(uri);
+  console.log('Conexión establecida');
+
+  for (const { id, plainPassword } of TARGETS) {
+    const usuario = await Usuario.findById(id);
+
+    if (!usuario) {
+      console.log(`Usuario ${id}: no encontrado`);
+      continue;
+    }
+
+    usuario.password = plainPassword;
+    await usuario.save();
+
+    console.log(`Usuario ${id}: password ajustado correctamente`);
+  }
+
+  console.log('Migración finalizada');
+  await mongoose.disconnect();
+}
+
+migrateLegacyPasswords().catch((error) => {
+  console.error('Error en migración:', error);
+  process.exit(1);
+});
+</file>
+
+<file path="scripts/verifyLegacyLogins.js">
+const mongoose = require('mongoose');
+const Usuario = require('../models/Usuarios');
+const { DB_USER, DB_PASSWORD, DB_HOST } = require('../constants');
+
+const DB_NAME = process.env.DB_NAME || 'Mentora_db';
+const DB_HOST_CLEAN = (DB_HOST || '')
+  .replace(/\/.*$/, '')
+  .replace(/\?.*$/, '');
+const DB_OPTIONS = process.env.DB_OPTIONS ||
+  'ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0';
+const MONGO_URI = process.env.MONGO_URI ||
+  `mongodb://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST_CLEAN}/${DB_NAME}?${DB_OPTIONS}&retryWrites=true&w=majority`;
+
+async function main() {
+  await mongoose.connect(MONGO_URI);
+
+  const cases = [
+    {
+      id: '6a2b38f592e40d4f67f3e402',
+      correo: 'zzzz@academiaxd',
+      password: 'passwordUltraSeguro123'
+    },
+    {
+      id: '6a2c29e6e5fa86af65f96813',
+      correo: 'juan.perez@miacademia.com',
+      password: 'passwordSeguro123'
+    },
+    {
+      id: '6a2c350fa580e500c769971d',
+      correo: 'zzzz@gamil.com',
+      password: 'passwordSeguro123'
+    }
+  ];
+
+  for (const item of cases) {
+    const usuario = await Usuario.findById(item.id);
+    if (!usuario) {
+      console.log(`FAIL ${item.id}: usuario no encontrado`);
+      continue;
+    }
+
+    const match = await usuario.compararPassword(item.password);
+    console.log(`${item.correo} -> compare=${match}`);
+  }
+
+  await mongoose.disconnect();
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+</file>
+
+<file path=".gitignore">
+```
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+# Environment
+.env
+.env.local
+.env.*
+
+.vscode/
+```
+</file>
+
+<file path="app.js">
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const { API_VERSION } = require("./constants");
+
+const AuthRouter = require("./router/Auth");
+const UsuariosRouter = require("./router/Usuarios");
+const CursosRouter = require("./router/Cursos");
+const InscripcionesRouter = require("./router/Inscripciones");
+const LeccionesRouter = require("./router/Lecciones");
+const ResenasRouter = require("./router/Resenas");
+const SeccionesRouter = require("./router/Secciones");
+const DashboardRouter = require("./router/Dashboard");
+const UploadsRouter = require("./router/Uploads");
+const InstructoresRouter = require("./router/Instructores");
+const app = express()
+
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true
+}));
+
+app.use(express.urlencoded({ extended: true, limit: "3mb" }));
+app.use(express.json({ limit: "3mb" }));
+
+app.use('/images', express.static(path.join(__dirname, 'uploads', 'images')));
+
+app.use(`/api/${API_VERSION}`, AuthRouter);
+app.use(`/api/${API_VERSION}`, UsuariosRouter);
+app.use(`/api/${API_VERSION}`, InscripcionesRouter);
+app.use(`/api/${API_VERSION}`, ResenasRouter);
+app.use(`/api/${API_VERSION}`, CursosRouter);
+app.use(`/api/${API_VERSION}`, LeccionesRouter);
+app.use(`/api/${API_VERSION}`, SeccionesRouter);
+app.use(`/api/${API_VERSION}`, DashboardRouter);
+app.use(`/api/${API_VERSION}`, UploadsRouter);
+app.use(`/api/${API_VERSION}`, InstructoresRouter);
+
+module.exports = app
+</file>
+
+<file path="constants.js">
+const DB_USER = process.env.DB_USER || "60823286_db_user2";
+const DB_PASSWORD = process.env.DB_PASSWORD || "admin";
+const DB_HOST = process.env.DB_HOST || "ac-hbkkpqh-shard-00-00.bpfzaub.mongodb.net:27017,ac-hbkkpqh-shard-00-01.bpfzaub.mongodb.net:27017,ac-hbkkpqh-shard-00-02.bpfzaub.mongodb.net:27017/?ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0";
+const API_VERSION = process.env.API_VERSION || "v1";
+const IP_SERVER = process.env.IP_SERVER || "localhost";
+const JWT_SECRET = process.env.JWT_SECRET || "9bceee966f8aeffddfa560fc270c6e8e319807028f056ce4c13cced9f30f59e4";
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || "8h";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:3000";
+
+module.exports = {
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    API_VERSION,
+    IP_SERVER,
+    JWT_SECRET,
+    JWT_EXPIRATION,
+    CORS_ORIGIN
+}
+</file>
+
+<file path="index.js">
+require('dotenv').config();
+const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
+const app = require("./app");
+
+// Create uploads/images directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads', 'images');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const {
+    DB_USER,
+    DB_PASSWORD,
+    DB_HOST,
+    API_VERSION,
+    IP_SERVER
+} = require("./constants");
+
+const DB_NAME = process.env.DB_NAME || "Mentora_db";
+const DB_HOST_CLEAN = (DB_HOST || "")
+    .replace(/\/.*$/, "")
+    .replace(/\?.*$/, "");
+const DB_OPTIONS = process.env.DB_OPTIONS || "ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI ||
+    `mongodb://${encodeURIComponent(DB_USER)}:${encodeURIComponent(DB_PASSWORD)}@${DB_HOST_CLEAN}/${DB_NAME}?${DB_OPTIONS}&retryWrites=true&w=majority`;
+
+const port = process.env.PORT || 3977;
+console.log("=== LA URI DETECTADA ES ==> ", MONGO_URI);
+mongoose.set('debug', true);
+
+mongoose.connect(MONGO_URI)
+    .then(() => {
+        app.listen(port, () => {
+            console.log(`Servidor corriendo en \n
+                 http://${IP_SERVER}:${port}/api/${API_VERSION}`);
+        });
+
+        console.log("######La conexion con la base de datos ha sido exitosa#####");
+    })
+    .catch(error => {
+        console.log("Error de conexion:", error.message);
+    });
+</file>
+
+<file path="package.json">
+{
+  "name": "web-personal-api",
+  "version": "0.0.1",
+  "description": "el api de la web personal",
+  "main": "index.js",
+  "author": "gustavo",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "1.20.0",
+    "cors": "2.8.5",
+    "dotenv": "17.4.2",
+    "express": "4.18.1",
+    "jsonwebtoken": "9.0.3",
+    "mongoose": "6.6.1",
+    "multer": "^2.2.0",
+    "nodemon": "^3.1.14"
+  }
+}
+</file>
+
+<file path="seed.js">
+require('dotenv').config();
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+// Importar modelos
+const Usuario = require('./models/Usuarios');
+const Curso = require('./models/Cursos');
+const Seccion = require('./models/Secciones');
+const Leccion = require('./models/Lecciones');
+const Inscripcion = require('./models/Inscripciones');
+const Resena = require('./models/Reseñas');
+
+const { DB_USER, DB_PASSWORD, DB_HOST } = require('./constants');
+
+const MONGO_URI = `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/Mentora_db?ssl=true&replicaSet=atlas-mgo7m3-shard-0&authSource=admin&appName=Cluster0&retryWrites=true&w=majority`;
+
+// Datos de prueba
+const datosPrueba = {
+  usuarios: [
+    {
+      nombre: 'Carlos Instructor',
+      correo: 'carlos@test.com',
+      password: '123456',
+      rol: 'instructor',
+      biografia: 'Instructor senior con 10 años de experiencia en desarrollo web',
+      activo: true
+    },
+    {
+      nombre: 'Maria Estudiante',
+      correo: 'maria@test.com',
+      password: '123456',
+      rol: 'estudiante',
+      biografia: 'Estudiante apasionada por la tecnología',
+      activo: true
+    },
+    {
+      nombre: 'Juan Estudiante',
+      correo: 'juan@test.com',
+      password: '123456',
+      rol: 'estudiante',
+      biografia: 'Aprendiz de desarrollador',
+      activo: true
+    },
+    {
+      nombre: 'Ana Instructora',
+      correo: 'ana@test.com',
+      password: '123456',
+      rol: 'instructor',
+      biografia: 'Experta en Python y Machine Learning',
+      activo: true
+    }
+  ],
+  cursos: [],
+  secciones: [],
+  lecciones: [],
+  inscripciones: [],
+  resenas: []
+};
+
+async function limpiarBD() {
+  console.log('🗑️  Limpiando base de datos...');
+  await Promise.all([
+    Usuario.deleteMany({}),
+    Curso.deleteMany({}),
+    Seccion.deleteMany({}),
+    Leccion.deleteMany({}),
+    Inscripcion.deleteMany({}),
+    Resena.deleteMany({})
+  ]);
+  console.log('✅ Base de datos limpia');
+}
+
+async function crearUsuarios() {
+  console.log('\n👥 Creando usuarios...');
+
+  const usuariosCreados = [];
+
+  for (const usuarioData of datosPrueba.usuarios) {
+    const usuario = new Usuario(usuarioData);
+    await usuario.save();
+    usuariosCreados.push(usuario);
+    console.log(`   ✓ ${usuario.nombre} (${usuario.rol})`);
+  }
+
+  return usuariosCreados;
+}
+
+async function crearCursos(usuarios) {
+  console.log('\n📚 Creando cursos...');
+
+  const instructores = usuarios.filter(u => u.rol === 'instructor');
+  const cursosCreados = [];
+
+  // Curso 1: Node.js desde Cero
+  const curso1 = new Curso({
+    instructorID: instructores[0]._id,
+    titulo: 'Node.js desde Cero',
+    descripcion: 'Aprende Node.js desde los fundamentos hasta crear APIs REST completas',
+    categoria: 'Programación',
+    nivel: 'principiante',
+    precio: 29.99,
+    publicado: true,
+    calificacion_promedio: 4.5,
+    total_inscritos: 0
+  });
+  await curso1.save();
+  cursosCreados.push(curso1);
+  console.log(`   ✓ ${curso1.titulo}`);
+
+  // Curso 2: React Avanzado
+  const curso2 = new Curso({
+    instructorID: instructores[0]._id,
+    titulo: 'React Avanzado',
+    descripcion: 'Domina React con hooks, contexto, y patrones avanzados',
+    categoria: 'Programación',
+    nivel: 'avanzado',
+    precio: 39.99,
+    publicado: true,
+    calificacion_promedio: 4.8,
+    total_inscritos: 0
+  });
+  await curso2.save();
+  cursosCreados.push(curso2);
+  console.log(`   ✓ ${curso2.titulo}`);
+
+  // Curso 3: Python para Data Science
+  const curso3 = new Curso({
+    instructorID: instructores[1]._id,
+    titulo: 'Python para Data Science',
+    descripcion: 'Aprende Python aplicado a ciencia de datos y machine learning',
+    categoria: 'Data Science',
+    nivel: 'intermedio',
+    precio: 49.99,
+    publicado: true,
+    calificacion_promedio: 4.7,
+    total_inscritos: 0
+  });
+  await curso3.save();
+  cursosCreados.push(curso3);
+  console.log(`   ✓ ${curso3.titulo}`);
+
+  return cursosCreados;
+}
+
+async function crearSecciones(cursos) {
+  console.log('\n📖 Creando secciones...');
+
+  const seccionesCreadas = [];
+
+  // Secciones para Curso 1
+  const sec1_1 = new Seccion({
+    cursoID: cursos[0]._id,
+    titulo: 'Introducción a Node.js',
+    orden: 1
+  });
+  await sec1_1.save();
+  seccionesCreadas.push(sec1_1);
+
+  const sec1_2 = new Seccion({
+    cursoID: cursos[0]._id,
+    titulo: 'Express y APIs REST',
+    orden: 2
+  });
+  await sec1_2.save();
+  seccionesCreadas.push(sec1_2);
+
+  // Secciones para Curso 2
+  const sec2_1 = new Seccion({
+    cursoID: cursos[1]._id,
+    titulo: 'Hooks Avanzados',
+    orden: 1
+  });
+  await sec2_1.save();
+  seccionesCreadas.push(sec2_1);
+
+  // Secciones para Curso 3
+  const sec3_1 = new Seccion({
+    cursoID: cursos[2]._id,
+    titulo: 'Fundamentos de Python',
+    orden: 1
+  });
+  await sec3_1.save();
+  seccionesCreadas.push(sec3_1);
+
+  console.log(`   ✓ ${seccionesCreadas.length} secciones creadas`);
+
+  return seccionesCreadas;
+}
+
+async function crearLecciones(secciones, cursos) {
+  console.log('\n🎬 Creando lecciones...');
+
+  const leccionesCreadas = [];
+
+  // Lecciones para Curso 1 - Sección 1
+  const lec1 = new Leccion({
+    seccionID: secciones[0]._id,
+    titulo: '¿Qué es Node.js?',
+    descripcion: 'Introducción conceptual',
+    url: 'https://www.youtube.com/watch?v=TlB_eWDSMt4',
+    duracion: 15,
+    orden: 1
+  });
+  await lec1.save();
+  leccionesCreadas.push(lec1);
+
+  const lec2 = new Leccion({
+    seccionID: secciones[0]._id,
+    titulo: 'Instalación y Configuración',
+    descripcion: 'Configura tu entorno de desarrollo',
+    url: 'https://www.youtube.com/watch?v=7BlTBkhqOKE',
+    duracion: 20,
+    orden: 2
+  });
+  await lec2.save();
+  leccionesCreadas.push(lec2);
+
+  // Lecciones para Curso 1 - Sección 2
+  const lec3 = new Leccion({
+    seccionID: secciones[1]._id,
+    titulo: 'Creando tu primera API',
+    descripcion: 'Endpoints básicos con Express',
+    url: 'https://www.youtube.com/watch?v=pKd0Rpw7O48',
+    duracion: 30,
+    orden: 1
+  });
+  await lec3.save();
+  leccionesCreadas.push(lec3);
+
+  // Lecciones para Curso 2
+  const lec4 = new Leccion({
+    seccionID: secciones[2]._id,
+    titulo: 'useEffect Avanzado',
+    descripcion: 'Patrones complejos con useEffect',
+    url: 'https://www.youtube.com/watch?v=DPxTRCIiSzs',
+    duracion: 25,
+    orden: 1
+  });
+  await lec4.save();
+  leccionesCreadas.push(lec4);
+
+  // Lecciones para Curso 3
+  const lec5 = new Leccion({
+    seccionID: secciones[3]._id,
+    titulo: 'Python Básico',
+    descripcion: 'Sintaxis y estructuras de control',
+    url: 'https://www.youtube.com/watch?v=chPhlsHoEPo',
+    duracion: 35,
+    orden: 1
+  });
+  await lec5.save();
+  leccionesCreadas.push(lec5);
+
+  console.log(`   ✓ ${leccionesCreadas.length} lecciones creadas`);
+
+  return leccionesCreadas;
+}
+
+async function crearInscripciones(usuarios, cursos) {
+  console.log('\n📝 Creando inscripciones...');
+
+  const estudiantes = usuarios.filter(u => u.rol === 'estudiante');
+  const inscripcionesCreadas = [];
+
+  // Maria se inscribe en Curso 1
+  const insc1 = new Inscripcion({
+    estudiante_id: estudiantes[0]._id,
+    curso_id: cursos[0]._id,
+    progreso: [],
+    porcentaje: 0
+  });
+  await insc1.save();
+  inscripcionesCreadas.push(insc1);
+
+  // Maria se inscribe en Curso 2
+  const insc2 = new Inscripcion({
+    estudiante_id: estudiantes[0]._id,
+    curso_id: cursos[1]._id,
+    progreso: [],
+    porcentaje: 0
+  });
+  await insc2.save();
+  inscripcionesCreadas.push(insc2);
+
+  // Juan se inscribe en Curso 1
+  const insc3 = new Inscripcion({
+    estudiante_id: estudiantes[1]._id,
+    curso_id: cursos[0]._id,
+    progreso: [],
+    porcentaje: 0
+  });
+  await insc3.save();
+  inscripcionesCreadas.push(insc3);
+
+  console.log(`   ✓ ${inscripcionesCreadas.length} inscripciones creadas`);
+
+  return inscripcionesCreadas;
+}
+
+async function crearResenas(usuarios, cursos) {
+  console.log('\n⭐ Creando reseñas...');
+
+  const estudiantes = usuarios.filter(u => u.rol === 'estudiante');
+  const resenasCreadas = [];
+
+  // Maria deja reseña en Curso 1
+  const resena1 = new Resena({
+    estudiante_id: estudiantes[0]._id,
+    curso_id: cursos[0]._id,
+    calificacion: 5,
+    comentario: 'Excelente curso, muy bien explicado!'
+  });
+  await resena1.save();
+  resenasCreadas.push(resena1);
+
+  // Juan deja reseña en Curso 1
+  const resena2 = new Resena({
+    estudiante_id: estudiantes[1]._id,
+    curso_id: cursos[0]._id,
+    calificacion: 4,
+    comentario: 'Muy buen contenido, recomendaría más ejercicios prácticos'
+  });
+  await resena2.save();
+  resenasCreadas.push(resena2);
+
+  console.log(`   ✓ ${resenasCreadas.length} reseñas creadas`);
+
+  return resenasCreadas;
+}
+
+async function actualizarTotales(cursos, inscripciones, resenas) {
+  console.log('\n📊 Actualizando totales...');
+
+  for (const curso of cursos) {
+    const totalInscritos = await Inscripcion.countDocuments({ curso_id: curso._id });
+    const resenasCurso = await Resena.find({ curso_id: curso._id });
+
+    let calificacionPromedio = 0;
+    if (resenasCurso.length > 0) {
+      const suma = resenasCurso.reduce((acc, r) => acc + r.calificacion, 0);
+      calificacionPromedio = Math.round((suma / resenasCurso.length) * 10) / 10;
+    }
+
+    curso.total_inscritos = totalInscritos;
+    curso.calificacion_promedio = calificacionPromedio;
+    await curso.save();
+
+    console.log(`   ✓ ${curso.titulo}: ${totalInscritos} inscritos, ${calificacionPromedio}★`);
+  }
+}
+
+async function mostrarTokens() {
+  console.log('\n🔑 Tokens JWT para pruebas (usar en Postman/Thunder Client):\n');
+
+  const jwt = require('jsonwebtoken');
+  const { JWT_SECRET, JWT_EXPIRATION } = require('./constants');
+
+  const usuarios = await Usuario.find();
+
+  for (const usuario of usuarios) {
+    const token = jwt.sign(
+      {
+        id: usuario._id,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        nombre: usuario.nombre
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION }
+    );
+
+    console.log(`${usuario.nombre} (${usuario.rol}):`);
+    console.log(`Bearer ${token}\n`);
+  }
+}
+
+async function main() {
+  try {
+    console.log('🌱 Iniciando seed de Mentora...\n');
+
+    // Conectar a MongoDB
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Conectado a MongoDB\n');
+
+    // Limpiar BD
+    await limpiarBD();
+
+    // Crear datos
+    const usuarios = await crearUsuarios();
+    const cursos = await crearCursos(usuarios);
+    const secciones = await crearSecciones(cursos);
+    const lecciones = await crearLecciones(secciones, cursos);
+    const inscripciones = await crearInscripciones(usuarios, cursos);
+    const resenas = await crearResenas(usuarios, cursos);
+
+    // Actualizar totales
+    await actualizarTotales(cursos, inscripciones, resenas);
+
+    // Mostrar tokens
+    await mostrarTokens();
+
+    console.log('✅ Seed completado exitosamente!\n');
+    console.log('📋 Resumen:');
+    console.log(`   - ${usuarios.length} usuarios`);
+    console.log(`   - ${cursos.length} cursos`);
+    console.log(`   - ${secciones.length} secciones`);
+    console.log(`   - ${lecciones.length} lecciones`);
+    console.log(`   - ${inscripciones.length} inscripciones`);
+    console.log(`   - ${resenas.length} reseñas`);
+
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error en el seed:', error.message);
+    process.exit(1);
+  }
+}
+
+main();
+</file>
+
+</files>

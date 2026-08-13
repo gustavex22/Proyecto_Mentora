@@ -9,22 +9,9 @@ import { Perfil } from './pages/perfil';
 import { CursosLista } from './pages/cursos/Lista';
 import { CursoPreview } from './pages/cursos/Preview';
 import { CursoForm } from './pages/cursos/Form';
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { MisCursos } from './pages/cursos/MisCursos';
 import { CursoAprendizaje } from './pages/cursos/Aprendizaje';
 import { PerfilPublico } from './pages/instructores/PerfilPublico';
-=======
-import { CursoAprendizaje } from './pages/cursos/Aprendizaje';
-import { PerfilPublico } from './pages/usuarios/PerfilPublico';
-import { Landing } from './pages/landing';
-import { Certificados, CertificadoDetalle } from './pages/certificados';
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
-import { MisCursos } from './pages/cursos/MisCursos';
-import { CursoAprendizaje } from './pages/cursos/Aprendizaje';
-import { PerfilPublico } from './pages/instructores/PerfilPublico';
->>>>>>> parent of 50ab708 (Retoques)
 import { Layout } from './components/Layout';
 
 function PublicLayoutRoute({ children, title }) {
@@ -84,15 +71,7 @@ function AppRoutes() {
       <Route path="/perfil" element={<ProtectedRoute title="Mi Perfil"><Perfil /></ProtectedRoute>} />
       <Route path="/explorar" element={<PublicLayoutRoute title="Explorar cursos"><CursosLista /></PublicLayoutRoute>} />
       <Route path="/cursos/:id" element={<PublicLayoutRoute><CursoPreview /></PublicLayoutRoute>} />
-<<<<<<< HEAD
-<<<<<<< HEAD
       <Route path="/instructores/:id" element={<PublicLayoutRoute><PerfilPublico /></PublicLayoutRoute>} />
-=======
-      <Route path="/usuarios/:id" element={<PublicLayoutRoute><PerfilPublico /></PublicLayoutRoute>} />
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
-      <Route path="/instructores/:id" element={<PublicLayoutRoute><PerfilPublico /></PublicLayoutRoute>} />
->>>>>>> parent of 50ab708 (Retoques)
       <Route path="/cursos/nuevo" element={<ProtectedRoute title="Crear curso"><CursoForm /></ProtectedRoute>} />
       <Route path="/cursos/:id/editar" element={<ProtectedRoute title="Editar curso"><CursoForm /></ProtectedRoute>} />
       <Route path="/mis-cursos" element={<ProtectedRoute title="Mis cursos"><MisCursos /></ProtectedRoute>} />

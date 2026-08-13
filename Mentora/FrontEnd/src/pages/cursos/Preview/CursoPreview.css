@@ -266,35 +266,3 @@
     border-radius: 16px;
   }
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-@media (max-width: 480px) {
-  .curso-preview {
-    padding: 18px;
-    margin: 12px 10px;
-  }
-
-  .curso-preview h1 {
-    font-size: 24px;
-  }
-
-  .curso-preview-price {
-    font-size: 26px;
-    padding: 12px 16px;
-  }
-
-  .preview-seccion-header {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .preview-leccion-item {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-}
->>>>>>> ceaeef02401b6a586d6225eba92589d016ac29b2
-=======
->>>>>>> parent of 50ab708 (Retoques)
