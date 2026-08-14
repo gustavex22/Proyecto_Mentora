@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { imageUrl } from '../../../../utils';
+import { UserLink } from '../../../../components/UserLink';
+import { Stars } from '../../../../components/Icons';
+import { FormularioRespuesta } from '../../shared/HiloRespuestas';
 
-export function ResenaCard({ resena, currentUserId, onUpdate, onDelete }) {
+export function ResenaCard({ resena, currentUserId, onUpdate, onDelete, puedeResponder, onResponder }) {
   const isOwner = currentUserId && resena.estudiante_id?._id === currentUserId;
   const [editing, setEditing] = useState(false);
   const [texto, setTexto] = useState(resena.comentario || '');
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [respondiendo, setRespondiendo] = useState(false);
 
   const iniciarEdicion = () => {
     setTexto(resena.comentario || '');
@@ -73,18 +76,10 @@ export function ResenaCard({ resena, currentUserId, onUpdate, onDelete }) {
       )}
 
       <div className="resena-header">
-        {resena.estudiante_id?.foto ? (
-          <img src={imageUrl(resena.estudiante_id.foto)} alt="" />
-        ) : (
-          <div className="perfil-photo-placeholder" style={{ width: 32, height: 32, fontSize: 14 }}>
-            {resena.estudiante_id?.nombre?.charAt(0) || '?'}
-          </div>
-        )}
-        <span className="resena-name">{resena.estudiante_id?.nombre || 'Anonimo'}</span>
+        <UserLink user={resena.estudiante_id} size="sm" />
         {mostrarEstrellas && (
           <span className="resena-stars">
-            {'\u2605'.repeat(resena.calificacion)}
-            {'\u2606'.repeat(5 - resena.calificacion)}
+            <Stars value={resena.calificacion} size={16} />
           </span>
         )}
       </div>
@@ -114,6 +109,24 @@ export function ResenaCard({ resena, currentUserId, onUpdate, onDelete }) {
         </div>
       ) : (
         resena.comentario && <p className="resena-comentario">{resena.comentario}</p>
+      )}
+
+      {puedeResponder && (
+        <div className="respuesta-parent-actions">
+          <button
+            type="button"
+            className="respuesta-action-btn"
+            onClick={() => setRespondiendo((v) => !v)}
+          >
+            Responder
+          </button>
+        </div>
+      )}
+      {puedeResponder && respondiendo && (
+        <FormularioRespuesta
+          onEnviar={(t) => onResponder(resena._id, t)}
+          onCancelar={() => setRespondiendo(false)}
+        />
       )}
     </div>
   );

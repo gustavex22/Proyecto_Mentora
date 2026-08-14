@@ -203,7 +203,7 @@ exports.marcarLeccionCompletada = async (req, res) => {
       });
     }
 
-    entry.completada = true;
+    entry.completada = !entry.completada;
 
     const total = inscripcion.progreso.length;
     const completadas = inscripcion.progreso.filter(p => p.completada).length;
@@ -213,7 +213,7 @@ exports.marcarLeccionCompletada = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Lección marcada como completada",
+      message: entry.completada ? "Lección marcada como completada" : "Lección desmarcada",
       inscripcion
     });
   } catch (error) {

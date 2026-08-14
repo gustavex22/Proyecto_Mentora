@@ -8,15 +8,25 @@ const resenas = new mongoose.Schema({
     validate: {
       validator: async function(valorId) {
         const usuario = await mongoose.model('Usuario').findById(valorId);
-        return usuario && usuario.rol === 'estudiante';
+        return usuario && (usuario.rol === 'estudiante' || usuario.rol === 'instructor');
       },
-      message: 'El ID proporcionado no pertenece a un usuario con el rol de "estudiante".'
+      message: 'El ID proporcionado no pertenece a un usuario válido.'
     }
   },
   curso_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Curso',
     required: [true, 'El ID del curso es obligatorio.']
+  },
+  leccion_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Leccion',
+    default: null
+  },
+  respuesta_a: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Resenas',
+    default: null
   },
   calificacion: {
     type: Number,

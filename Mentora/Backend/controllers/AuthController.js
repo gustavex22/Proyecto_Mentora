@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Usuario = require("../models/Usuarios");
 const { JWT_SECRET, JWT_EXPIRATION } = require('../constants');
+const { validateSocialUrl, normalizeRedes, PLATFORMS } = require('../utils/socialValidators');
 
 // Controlador de registro de nuevos usuarios
 exports.register = async (req, res) => {
@@ -18,6 +19,13 @@ exports.register = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "El rol debe ser 'instructor' o 'estudiante'"
+      });
+    }
+
+    if (!correo.toLowerCase().endsWith('@gmail.com')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Solo se permiten correos de Gmail (@gmail.com)'
       });
     }
 
@@ -235,14 +243,31 @@ exports.updateProfile = async (req, res) => {
     
     const camposPermitidos = ['nombre', 'biografia', 'foto', 'redes_sociales'];
     const datosActualizar = {};
-    
+
     for (const campo of camposPermitidos) {
       if (req.body[campo] !== undefined) {
         datosActualizar[campo] = req.body[campo];
       }
     }
 
+    if (datosActualizar.redes_sociales !== undefined) {
+      const redes = normalizeRedes(datosActualizar.redes_sociales);
+      for (const p of PLATFORMS) {
+        const error = validateSocialUrl(p, redes[p]);
+        if (error) {
+          return res.status(400).json({ success: false, message: `Redes sociales (${p}): ${error}` });
+        }
+      }
+      datosActualizar.redes_sociales = redes;
+    }
+
     if (req.body.correo) {
+      if (!req.body.correo.toLowerCase().endsWith('@gmail.com')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Solo se permiten correos de Gmail (@gmail.com)'
+        });
+      }
       const usuarioConCorreo = await Usuario.findOne({
         correo: req.body.correo.toLowerCase(),
         _id: { $ne: req.user.id }

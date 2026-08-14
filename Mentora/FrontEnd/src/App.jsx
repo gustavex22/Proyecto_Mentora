@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './context/useAuth';
 import { Login } from './pages/auth/Login';
@@ -9,9 +9,10 @@ import { Perfil } from './pages/perfil';
 import { CursosLista } from './pages/cursos/Lista';
 import { CursoPreview } from './pages/cursos/Preview';
 import { CursoForm } from './pages/cursos/Form';
-import { MisCursos } from './pages/cursos/MisCursos';
 import { CursoAprendizaje } from './pages/cursos/Aprendizaje';
-import { PerfilPublico } from './pages/instructores/PerfilPublico';
+import { PerfilPublico } from './pages/usuarios/PerfilPublico';
+import { Landing } from './pages/landing';
+import { Certificados, CertificadoDetalle } from './pages/certificados';
 import { Layout } from './components/Layout';
 
 function PublicLayoutRoute({ children, title }) {
@@ -65,18 +66,20 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Register />} />
       <Route path="/dashboard" element={<ProtectedRoute title="Dashboard"><DashboardRouter /></ProtectedRoute>} />
       <Route path="/perfil" element={<ProtectedRoute title="Mi Perfil"><Perfil /></ProtectedRoute>} />
       <Route path="/explorar" element={<PublicLayoutRoute title="Explorar cursos"><CursosLista /></PublicLayoutRoute>} />
       <Route path="/cursos/:id" element={<PublicLayoutRoute><CursoPreview /></PublicLayoutRoute>} />
-      <Route path="/instructores/:id" element={<PublicLayoutRoute><PerfilPublico /></PublicLayoutRoute>} />
+      <Route path="/usuarios/:id" element={<PublicLayoutRoute><PerfilPublico /></PublicLayoutRoute>} />
       <Route path="/cursos/nuevo" element={<ProtectedRoute title="Crear curso"><CursoForm /></ProtectedRoute>} />
       <Route path="/cursos/:id/editar" element={<ProtectedRoute title="Editar curso"><CursoForm /></ProtectedRoute>} />
-      <Route path="/mis-cursos" element={<ProtectedRoute title="Mis cursos"><MisCursos /></ProtectedRoute>} />
       <Route path="/cursos/:id/aprender" element={<ProtectedRoute><CursoAprendizaje /></ProtectedRoute>} />
-      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
+      <Route path="/certificates" element={<ProtectedRoute title="Mis Certificados"><Certificados /></ProtectedRoute>} />
+      <Route path="/certificates/:id" element={<ProtectedRoute><CertificadoDetalle /></ProtectedRoute>} />
+      <Route path="*" element={<Navigate to={user ? '/dashboard' : '/'} replace />} />
     </Routes>
   );
 }

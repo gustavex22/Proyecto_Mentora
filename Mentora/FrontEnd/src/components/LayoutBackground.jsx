@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const randomBetween = (min, max) => Math.random() * (max - min) + min;
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -24,10 +24,10 @@ const createShapes = (count, containerWidth, containerHeight) => {
       height,
       x: randomBetween(-width * 0.25, Math.max(0, containerWidth - width + width * 0.25)),
       y: randomBetween(-height * 0.22, Math.max(0, containerHeight - height + height * 0.22)),
-      vx: randomBetween(-6, 6),
-      vy: randomBetween(-5, 5),
+      vx: randomBetween(-18, 18),
+      vy: randomBetween(-14, 14),
       rotation: randomBetween(0, 360),
-      angularVelocity: randomBetween(-1.5, 1.5),
+      angularVelocity: randomBetween(-6, 6),
       color,
       shape: shapePath,
       opacity: index % 3 === 0 ? 0.78 : index % 2 === 0 ? 0.82 : 0.7,
@@ -35,40 +35,13 @@ const createShapes = (count, containerWidth, containerHeight) => {
   });
 };
 
-export const LayoutBackground = forwardRef(function LayoutBackground(_, ref) {
+export function LayoutBackground() {
   const containerRef = useRef(null);
   const shapeRefs = useRef([]);
   const shapesRef = useRef([]);
   const frameRef = useRef(null);
   const sizeRef = useRef({ width: 0, height: 0 });
-  const scatterModeRef = useRef(false);
-  const scatterTimerRef = useRef(null);
   const [shapes, setShapes] = useState(() => createShapes(8, 1200, 900));
-
-  const triggerScatter = useCallback(() => {
-    scatterModeRef.current = true;
-
-    shapesRef.current.forEach((shape) => {
-      const angle = randomBetween(0, Math.PI * 2);
-      const force = randomBetween(200, 600);
-
-      shape.vx = Math.cos(angle) * force * randomBetween(0.4, 1.2);
-      shape.vy = Math.sin(angle) * force * randomBetween(0.4, 1.2);
-      shape.angularVelocity = randomBetween(-8, 8);
-    });
-
-    clearTimeout(scatterTimerRef.current);
-    scatterTimerRef.current = setTimeout(() => {
-      scatterModeRef.current = false;
-      shapesRef.current.forEach((shape) => {
-        shape.vx *= 0.1;
-        shape.vy *= 0.1;
-        shape.angularVelocity = randomBetween(-1.5, 1.5);
-      });
-    }, 3500);
-  }, []);
-
-  useImperativeHandle(ref, () => ({ triggerScatter }), [triggerScatter]);
 
   useEffect(() => {
     shapesRef.current = shapes;
@@ -99,51 +72,40 @@ export const LayoutBackground = forwardRef(function LayoutBackground(_, ref) {
         return;
       }
 
-      const isScattering = scatterModeRef.current;
-
       shapesRef.current.forEach((shape) => {
         shape.x += shape.vx * 0.03;
         shape.y += shape.vy * 0.03;
         shape.rotation += shape.angularVelocity * 0.03;
 
-        if (isScattering) {
-          shape.vx *= 0.988;
-          shape.vy *= 0.988;
-          shape.angularVelocity *= 0.997;
-        } else {
-          const horizontalLimit = shape.width * 0.08;
-          const verticalLimit = shape.height * 0.08;
+        const horizontalLimit = shape.width * 0.08;
+        const verticalLimit = shape.height * 0.08;
 
-          if (shape.x < -horizontalLimit) {
-            shape.x = -horizontalLimit;
-            shape.vx = Math.abs(shape.vx) * randomBetween(0.76, 0.96);
-          } else if (shape.x + shape.width > width + horizontalLimit) {
-            shape.x = width - shape.width + horizontalLimit;
-            shape.vx = -Math.abs(shape.vx) * randomBetween(0.76, 0.96);
-          }
-
-          if (shape.y < -verticalLimit) {
-            shape.y = -verticalLimit;
-            shape.vy = Math.abs(shape.vy) * randomBetween(0.78, 0.94);
-          } else if (shape.y + shape.height > height + verticalLimit) {
-            shape.y = height - shape.height + verticalLimit;
-            shape.vy = -Math.abs(shape.vy) * randomBetween(0.78, 0.94);
-          }
-
-          if (Math.abs(shape.vx) < 1.0) {
-            shape.vx = shape.vx < 0 ? -1.2 : 1.2;
-          }
-          if (Math.abs(shape.vy) < 1.0) {
-            shape.vy = shape.vy < 0 ? -1.2 : 1.2;
-          }
-
-          shape.vx = clamp(shape.vx, -15, 15);
-          shape.vy = clamp(shape.vy, -12, 12);
-          shape.angularVelocity = clamp(shape.angularVelocity, -2, 2);
-
-          shape.vx *= 0.998;
-          shape.vy *= 0.998;
+        if (shape.x < -horizontalLimit) {
+          shape.x = -horizontalLimit;
+          shape.vx = Math.abs(shape.vx) * randomBetween(0.76, 0.96);
+        } else if (shape.x + shape.width > width + horizontalLimit) {
+          shape.x = width - shape.width + horizontalLimit;
+          shape.vx = -Math.abs(shape.vx) * randomBetween(0.76, 0.96);
         }
+
+        if (shape.y < -verticalLimit) {
+          shape.y = -verticalLimit;
+          shape.vy = Math.abs(shape.vy) * randomBetween(0.78, 0.94);
+        } else if (shape.y + shape.height > height + verticalLimit) {
+          shape.y = height - shape.height + verticalLimit;
+          shape.vy = -Math.abs(shape.vy) * randomBetween(0.78, 0.94);
+        }
+
+        if (Math.abs(shape.vx) < 1.6) {
+          shape.vx = shape.vx < 0 ? -1.8 : 1.8;
+        }
+        if (Math.abs(shape.vy) < 1.6) {
+          shape.vy = shape.vy < 0 ? -1.8 : 1.8;
+        }
+
+        shape.vx = clamp(shape.vx, -24, 24);
+        shape.vy = clamp(shape.vy, -20, 20);
+        shape.angularVelocity = clamp(shape.angularVelocity, -6, 6);
 
         const shapeEl = shapeRefs.current[shape.id];
         if (shapeEl) {
@@ -159,7 +121,6 @@ export const LayoutBackground = forwardRef(function LayoutBackground(_, ref) {
     return () => {
       window.removeEventListener('resize', updateSize);
       cancelAnimationFrame(frameRef.current);
-      clearTimeout(scatterTimerRef.current);
     };
   }, []);
 
@@ -182,4 +143,4 @@ export const LayoutBackground = forwardRef(function LayoutBackground(_, ref) {
       ))}
     </div>
   );
-});
+}

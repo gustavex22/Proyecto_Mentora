@@ -178,3 +178,58 @@ html, body, #root {
   font-weight: 700;
   margin-bottom: 24px;
 }
+
+/* --- Media queries globales --- */
+
+@media (max-width: 1024px) {
+  body {
+    font-size: 15px;
+  }
+
+  .layout-main-content {
+    padding: 28px 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .layout-main-content {
+    padding: 22px 14px;
+  }
+
+  .layout-page-title {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  .layout-navbar-public {
+    padding: 0 14px;
+    height: 52px;
+  }
+
+  .layout-navbar-public-links {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-navbar-public-links {
+    display: none;
+  }
+
+  .layout-main-content {
+    padding: 18px 12px;
+  }
+
+  .layout-page-title {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .empty-message {
+    padding: 28px 0;
+  }
+}

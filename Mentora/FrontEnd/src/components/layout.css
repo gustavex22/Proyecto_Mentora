@@ -184,3 +184,148 @@
   letter-spacing: -0.01em;
   color: #ffffff;
 }
+
+@media (max-width: 1024px) {
+  .layout-navbar {
+    padding: 14px 24px;
+  }
+
+  .layout-search {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-navbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .layout-search {
+    order: 3;
+    width: 100%;
+    display: none;
+  }
+
+  .layout-auth-buttons {
+    gap: 12px;
+  }
+
+  .layout-title {
+    font-size: 28px;
+  }
+
+  .layout-content {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-navbar {
+    padding: 10px 12px;
+  }
+
+  .layout-logo {
+    font-size: 18px;
+  }
+
+  .layout-auth-buttons {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .layout-btn-text,
+  .layout-btn-nav {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}
+
+/* Search dropdown styles for authenticated navbar */
+.layout-input-container {
+  position: relative;
+}
+
+.layout-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(27, 46, 38, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 200;
+  animation: dropdownIn 0.18s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.layout-search-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.layout-search-result:last-child {
+  border-bottom: none;
+}
+
+.layout-search-result:hover {
+  background: rgba(163, 190, 176, 0.1);
+}
+
+.layout-search-result-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.layout-search-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.layout-search-result-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layout-search-result-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layout-search-loading,
+.layout-search-empty {
+  padding: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

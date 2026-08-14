@@ -206,7 +206,7 @@ export function CursoForm() {
               ))}
             </div>
             <div style={{ marginTop: 24 }}>
-              <button className="btn-primary" type="button" onClick={() => navigate('/mis-cursos')}>Ir a mis cursos</button>
+              <button className="btn-primary" type="button" onClick={() => navigate('/dashboard')}>Ir al dashboard</button>
             </div>
           </>
         )}

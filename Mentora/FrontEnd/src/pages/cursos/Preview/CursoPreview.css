@@ -248,7 +248,8 @@
 
 .leccion-icon {
   color: #6ee7b7; /* Ícono de play verde brillante */
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* =========================================
@@ -264,5 +265,31 @@
     padding: 24px;
     margin: 20px 16px;
     border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .curso-preview {
+    padding: 18px;
+    margin: 12px 10px;
+  }
+
+  .curso-preview h1 {
+    font-size: 24px;
+  }
+
+  .curso-preview-price {
+    font-size: 26px;
+    padding: 12px 16px;
+  }
+
+  .preview-seccion-header {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .preview-leccion-item {
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }

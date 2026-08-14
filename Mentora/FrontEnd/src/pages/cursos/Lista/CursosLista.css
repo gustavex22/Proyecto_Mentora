@@ -122,4 +122,27 @@
 @media (max-width: 768px) {
   .lista-page { padding: 18px 14px 32px; }
   .lista-card-img { height: 120px; }
+
+  .lista-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .lista-filters {
+    flex-direction: column;
+  }
+
+  .lista-filters input,
+  .lista-filters select {
+    width: 100%;
+  }
+
+  .lista-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lista-card-img {
+    height: 140px;
+  }
 }
