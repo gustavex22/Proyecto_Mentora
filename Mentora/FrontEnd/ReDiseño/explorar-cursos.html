@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorar cursos — Mentora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --ink:#07200f;
+    --forest:#0f4a29;
+    --viper:#37e069;
+    --viper-dark:#1fae4c;
+    --mist:#e3f9e8;
+    --mist-strong:#bdf0c8;
+    --line:#bfe8ca;
+    --muted:#4f6b5a;
+    --gold:#e0a537;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Manrope',sans-serif;
+    background:var(--white);
+    color:var(--ink);
+  }
+  a{text-decoration:none;}
+
+  /* -------- Barra superior (rediseñada) -------- */
+  .topbar{
+    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; gap:24px;
+    background:var(--forest);
+    padding:14px 40px;
+  }
+  .logo{font-family:'Fraunces',serif; font-weight:700; font-size:19px; letter-spacing:.03em; color:var(--white); flex-shrink:0;}
+
+  .nav-tabs{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:99px;
+    padding:4px;
+  }
+  .nav-tabs a{
+    padding:8px 16px;
+    border-radius:99px;
+    font-size:13.5px;
+    font-weight:700;
+    color:rgba(255,255,255,.72);
+    transition:background .15s ease, color .15s ease;
+  }
+  .nav-tabs a:hover{color:var(--white);}
+  .nav-tabs a.active{background:var(--viper); color:var(--ink);}
+
+  .topbar-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-left:auto;
+  }
+  .topbar-search{position:relative; width:190px; transition:width .2s ease;}
+  .topbar-search input{
+    width:100%; padding:9px 38px 9px 14px; border-radius:99px;
+    border:1.5px solid rgba(255,255,255,.14); background:rgba(255,255,255,.08);
+    color:var(--white); font-size:13.5px; outline:none;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .topbar-search input::placeholder{color:rgba(255,255,255,.5);}
+  .topbar-search input:focus{background:rgba(255,255,255,.14); border-color:var(--viper); width:100%;}
+  .topbar-search:focus-within{width:230px;}
+  .topbar-search svg{position:absolute; right:13px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:rgba(255,255,255,.6); pointer-events:none;}
+
+  .nav-divider{width:1px; height:22px; background:rgba(255,255,255,.16);}
+
+  .user-menu{position:relative;}
+  .user-chip{
+    display:flex; align-items:center; gap:9px;
+    background:transparent; border:none; cursor:pointer;
+    padding:4px 6px; border-radius:99px;
+    transition:background .15s ease;
+  }
+  .user-chip:hover{background:rgba(255,255,255,.08);}
+  .chip-chevron{width:13px; height:13px; color:rgba(255,255,255,.6); transition:transform .15s ease;}
+  .user-chip.open .chip-chevron{transform:rotate(180deg);}
+  .avatar{
+    width:32px; height:32px; border-radius:50%;
+    background:var(--viper); color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:13px; flex-shrink:0;
+  }
+  .nav-user{color:var(--white); font-weight:700; font-size:13.5px;}
+
+  .dropdown{
+    position:absolute;
+    top:calc(100% + 12px);
+    right:0;
+    min-width:180px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:16px;
+    box-shadow:0 20px 44px rgba(7,32,15,0.20);
+    padding:8px;
+    display:none;
+    z-index:40;
+  }
+  .dropdown.open{display:block;}
+  .dropdown a{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink);
+    transition:background .15s ease, color .15s ease;
+  }
+  .dropdown a svg{width:16px; height:16px; color:var(--muted); flex-shrink:0;}
+  .dropdown a:hover{background:var(--mist); color:var(--forest);}
+  .dropdown a:hover svg{color:var(--forest);}
+
+  .btn-logout{
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px;
+    border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.25);
+    background:transparent;
+    color:var(--white);
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .btn-logout svg{width:16px; height:16px;}
+  .btn-logout:hover{background:var(--viper); border-color:var(--viper); color:var(--ink);}
+
+  /* -------- Encabezado -------- */
+  .page-head{
+    padding:40px 40px 0;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .page-head h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:34px;
+    margin:0 0 6px;
+  }
+  .page-head p{margin:0; color:var(--muted); font-size:14.5px;}
+  .result-count{
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--forest);
+    background:var(--mist);
+    padding:8px 16px;
+    border-radius:99px;
+    white-space:nowrap;
+  }
+
+  /* -------- Chips de categoría -------- */
+  .chip-row{
+    display:flex;
+    gap:10px;
+    padding:22px 40px 0;
+    overflow-x:auto;
+  }
+  .chip{
+    flex-shrink:0;
+    font-size:13.5px;
+    font-weight:700;
+    padding:9px 18px;
+    border-radius:99px;
+    border:1.5px solid var(--line);
+    color:var(--forest);
+    background:var(--white);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .chip.active{background:var(--viper); border-color:var(--viper); color:var(--ink);}
+  .chip:not(.active):hover{border-color:var(--viper);}
+
+  /* -------- Layout principal -------- */
+  .layout{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    gap:30px;
+    padding:26px 40px 70px;
+    align-items:start;
+  }
+
+  /* Sidebar */
+  .sidebar{
+    background:var(--mist);
+    border-radius:20px;
+    padding:24px 22px;
+    position:sticky;
+    top:88px;
+  }
+  .filter-group{margin-bottom:26px;}
+  .filter-group:last-child{margin-bottom:0;}
+  .filter-group h4{
+    margin:0 0 14px;
+    font-size:11.5px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--forest);
+  }
+  .check-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:13.5px;
+    color:var(--ink);
+    padding:6px 0;
+    cursor:pointer;
+  }
+  .check-row span.count{color:var(--muted); font-weight:600; font-size:12px;}
+  .check-row input{width:16px; height:16px; accent-color:var(--viper); margin-right:10px;}
+  .check-label{display:flex; align-items:center;}
+  .level-pills{display:flex; flex-direction:column; gap:8px;}
+  .price-slider{width:100%; accent-color:var(--viper); margin-top:6px;}
+  .price-values{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); font-weight:700; margin-top:4px;}
+  .btn-clear{
+    width:100%;
+    margin-top:6px;
+    background:transparent;
+    border:1.5px solid var(--line);
+    color:var(--forest);
+    font-weight:700;
+    font-size:13px;
+    padding:10px;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  .btn-clear:hover{border-color:var(--viper);}
+
+  /* Toolbar de resultados */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .toolbar-left{font-size:13.5px; color:var(--muted); font-weight:600;}
+  .toolbar-right{display:flex; align-items:center; gap:10px;}
+  .sort-select{
+    appearance:none; -webkit-appearance:none;
+    font-family:'Manrope',sans-serif; font-size:13px; font-weight:700;
+    color:var(--ink); background:var(--white);
+    border:1.5px solid var(--line); border-radius:99px;
+    padding:9px 34px 9px 16px; cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f4a29' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat; background-position:right 13px center; background-size:13px;
+  }
+  .view-toggle{display:flex; border:1.5px solid var(--line); border-radius:99px; overflow:hidden;}
+  .view-toggle button{
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--white); border:none; cursor:pointer; color:var(--muted);
+  }
+  .view-toggle button.active{background:var(--viper); color:var(--ink);}
+  .view-toggle svg{width:16px; height:16px;}
+
+  /* Lista de cursos */
+  .list{display:flex; flex-direction:column; gap:14px;}
+  .course-row{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    background:var(--white);
+    border:1.5px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  }
+  .course-row:hover{border-color:var(--viper); box-shadow:0 14px 32px rgba(7,32,15,0.10); transform:translateY(-2px);}
+  .row-thumb{
+    width:92px; height:92px; flex-shrink:0;
+    border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .row-thumb svg{width:28px; height:28px;}
+  .thumb-code{background:linear-gradient(135deg,#123821,#1fae4c);}
+  .thumb-photo{background:linear-gradient(135deg,#0f4a29,#37e069);}
+  .thumb-design{background:linear-gradient(135deg,#0a3620,#1fae4c);}
+  .thumb-marketing{background:linear-gradient(135deg,#123821,#37e069);}
+  .thumb-empty{background:var(--mist);}
+  .thumb-empty svg{color:var(--muted); opacity:.6;}
+
+  .row-body{flex:1; min-width:0;}
+  .row-title{
+    font-family:'Fraunces',serif; font-weight:600; font-size:16.5px;
+    margin:0 0 6px; color:var(--ink);
+  }
+  .row-desc{margin:0 0 10px; font-size:13px; color:var(--muted); line-height:1.5; max-width:520px;
+    overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical;}
+  .row-tags{display:flex; gap:6px; flex-wrap:wrap;}
+  .row-tags span{background:var(--mist); color:var(--forest); font-size:11px; font-weight:700; padding:4px 10px; border-radius:99px;}
+
+  .row-side{
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:10px;
+    padding-left:14px;
+  }
+  .row-rating{display:flex; align-items:center; gap:4px; font-size:12.5px; font-weight:700; color:var(--gold);}
+  .row-rating svg{width:13px; height:13px; fill:var(--gold);}
+  .row-rating.empty{color:#b7c8bd; font-weight:600; font-size:11.5px;}
+  .row-price{font-size:17px; font-weight:800; color:var(--ink);}
+  .row-btn{
+    background:var(--viper); color:var(--ink); font-weight:800; font-size:13px;
+    padding:9px 16px; border-radius:10px; white-space:nowrap;
+  }
+  .row-btn:hover{background:var(--viper-dark); color:var(--white);}
+
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar{position:static;}
+    .row-desc{display:none;}
+  }
+  @media (max-width:640px){
+    .topbar{flex-wrap:wrap; padding:14px 20px;}
+    .nav-tabs{order:3; flex-basis:100%; overflow-x:auto;}
+    .topbar-search{width:140px;}
+    .page-head, .chip-row, .layout{padding-left:20px; padding-right:20px;}
+    .course-row{flex-wrap:wrap;}
+    .row-side{flex-direction:row; align-items:center; padding-left:0; width:100%; justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="logo">MENTORA</span>
+
+  <div class="nav-tabs">
+    <a href="#" class="active">Explorar</a>
+    <a href="#">Dashboard</a>
+    <a href="#">Mis Certificados</a>
+  </div>
+
+  <div class="topbar-right">
+    <div class="topbar-search">
+      <input type="text" placeholder="Buscar...">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    </div>
+    <span class="nav-divider"></span>
+    <div class="user-menu">
+      <button class="user-chip" id="userChipBtn">
+        <span class="avatar">G</span>
+        <span class="nav-user">gustavo</span>
+        <svg class="chip-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="dropdown" id="userDropdown">
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          Perfil
+        </a>
+        <a href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Opciones
+        </a>
+      </div>
+    </div>
+    <button class="btn-logout" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <path d="M16 17l5-5-5-5"/>
+        <path d="M21 12H9"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div>
+    <h1>Explorar cursos</h1>
+    <p>Filtra por categoría, nivel y precio para encontrar tu próximo curso.</p>
+  </div>
+  <span class="result-count">7 cursos encontrados</span>
+</header>
+
+<div class="chip-row">
+  <span class="chip active">Todos</span>
+  <span class="chip">Programación</span>
+  <span class="chip">Diseño</span>
+  <span class="chip">Marketing</span>
+  <span class="chip">Fotografía</span>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar de filtros -->
+  <aside class="sidebar">
+    <div class="filter-group">
+      <h4>Categoría</h4>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Programación</span><span class="count">3</span></label>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Fotografía</span><span class="count">2</span></label>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Diseño</span><span class="count">1</span></label>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Marketing</span><span class="count">1</span></label>
+    </div>
+
+    <div class="filter-group">
+      <h4>Nivel</h4>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Principiante</span><span class="count">1</span></label>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Intermedio</span><span class="count">4</span></label>
+      <label class="check-row"><span class="check-label"><input type="checkbox">Avanzado</span><span class="count">2</span></label>
+    </div>
+
+    <div class="filter-group">
+      <h4>Rango de precio</h4>
+      <input type="range" class="price-slider" min="0" max="1000000" value="250000">
+      <div class="price-values"><span>$0</span><span>$1,000,000</span></div>
+    </div>
+
+    <button class="btn-clear">Limpiar filtros</button>
+  </aside>
+
+  <!-- Resultados -->
+  <main>
+    <div class="toolbar">
+      <span class="toolbar-left">Mostrando 7 de 7 cursos</span>
+      <div class="toolbar-right">
+        <select class="sort-select">
+          <option>Más relevantes</option>
+          <option>Precio: menor a mayor</option>
+          <option>Precio: mayor a menor</option>
+          <option>Mejor calificados</option>
+        </select>
+        <div class="view-toggle">
+          <button class="active" aria-label="Vista lista">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+          <button aria-label="Vista grilla">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="list">
+
+      <div class="course-row">
+        <div class="row-thumb thumb-code"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">Desarrollo de APIs con Node.js y MongoDB (Edición otra vez)</h3>
+          <p class="row-desc">Construye APIs REST robustas conectadas a MongoDB, con autenticación y buenas prácticas.</p>
+          <div class="row-tags"><span>Programación</span><span>Intermedio</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.1 6.6 7.2.9-5.3 5 1.4 7.2-6.4-3.6-6.4 3.6 1.4-7.2-5.3-5 7.2-.9z"/></svg>3.0</span>
+          <span class="row-price">$60</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-photo"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">hola prueba</h3>
+          <p class="row-desc">Curso de fotografía avanzada: composición, luz natural y edición profesional.</p>
+          <div class="row-tags"><span>Fotografía</span><span>Avanzado</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.1 6.6 7.2.9-5.3 5 1.4 7.2-6.4-3.6-6.4 3.6 1.4-7.2-5.3-5 7.2-.9z"/></svg>3.5</span>
+          <span class="row-price">$1,000,000</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-code"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">Programacion MREN</h3>
+          <p class="row-desc">Introducción al stack MERN para construir aplicaciones web completas.</p>
+          <div class="row-tags"><span>Programación</span><span>Avanzado</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating empty">Sin calificar</span>
+          <span class="row-price">$111</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-design"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">papu</h3>
+          <p class="row-desc">Fundamentos de diseño para quienes están dando sus primeros pasos.</p>
+          <div class="row-tags"><span>Diseño</span><span>Principiante</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating empty">Sin calificar</span>
+          <span class="row-price">$2,000</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-marketing"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M7 14v5a2 2 0 0 0 2 2h1v-6"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">asasa</h3>
+          <p class="row-desc">Estrategias de marketing digital para hacer crecer una marca.</p>
+          <div class="row-tags"><span>Marketing</span><span>Intermedio</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating empty">Sin calificar</span>
+          <span class="row-price">$12</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 5.82 1c-.53 1.5-2.42 1.5-2.92 3"/><circle cx="12" cy="17" r="0.4" fill="currentColor"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">Hola</h3>
+          <p class="row-desc">Curso en preparación, aún sin descripción disponible.</p>
+          <div class="row-tags"><span>Fotografía</span><span>Intermedio</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating empty">Sin calificar</span>
+          <span class="row-price">$117</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+      <div class="course-row">
+        <div class="row-thumb thumb-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9a3 3 0 1 1 5.82 1c-.53 1.5-2.42 1.5-2.92 3"/><circle cx="12" cy="17" r="0.4" fill="currentColor"/></svg></div>
+        <div class="row-body">
+          <h3 class="row-title">frvgfrvv</h3>
+          <p class="row-desc">Curso en preparación, aún sin descripción disponible.</p>
+          <div class="row-tags"><span>Sin categoría</span></div>
+        </div>
+        <div class="row-side">
+          <span class="row-rating empty">Sin calificar</span>
+          <span class="row-price">—</span>
+          <a href="#" class="row-btn">Ver curso</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const chipBtn = document.getElementById('userChipBtn');
+  const dropdown = document.getElementById('userDropdown');
+  chipBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+    chipBtn.classList.toggle('open');
+  });
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('open');
+    chipBtn.classList.remove('open');
+  });
+</script>
+
+</body>
+</html>
