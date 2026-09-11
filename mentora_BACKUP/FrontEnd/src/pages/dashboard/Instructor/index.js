@@ -1,1 +1,0 @@
-export { DashboardInstructor } from './DashboardInstructor';

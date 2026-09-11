@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrarse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --ink:#07200f;
+    --forest:#0f4a29;
+    --viper:#37e069;
+    --viper-dark:#1fae4c;
+    --viper-deep:#0f3a1f;
+    --mist:#e3f9e8;
+    --mist-strong:#bdf0c8;
+    --line:#bfe8ca;
+    --muted:#4f6b5a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Manrope',sans-serif;
+    background:var(--mist);
+    color:var(--ink);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .wrap{
+    position:relative;
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    min-height:100vh;
+  }
+  .bg-layer{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+  }
+  .bg-white{background:var(--white);}
+  .bg-green{background:var(--forest);}
+  .seam-blur-soft{
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:calc(51.22% - 260px);
+    width:520px;
+    z-index:1;
+    backdrop-filter:blur(40px);
+    -webkit-backdrop-filter:blur(40px);
+    pointer-events:none;
+  }
+  .seam-blur-strong{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    backdrop-filter:blur(140px);
+    -webkit-backdrop-filter:blur(140px);
+    pointer-events:none;
+  }
+
+  /* -------- Panel izquierdo -------- */
+  .brand{
+    position:relative;
+    z-index:3;
+    background:transparent;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:56px 64px;
+    overflow:hidden;
+  }
+  .brand-top{position:relative; z-index:2;}
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:18px;
+    letter-spacing:-0.01em;
+  }
+  .logo-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--viper);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 3px var(--mist);
+  }
+  .logo-mark svg{width:20px;height:20px;}
+
+  .brand-mid{position:relative; z-index:2; max-width:460px;}
+  .eyebrow-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--forest);
+    background:var(--mist);
+    border:1px solid var(--line);
+    padding:6px 14px;
+    border-radius:99px;
+    margin-bottom:26px;
+  }
+  .eyebrow-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--viper);}
+  .brand-mid h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:52px;
+    line-height:1.06;
+    letter-spacing:-0.01em;
+    margin:0 0 20px;
+    color:var(--ink);
+  }
+  .brand-mid h1 em{
+    font-style:italic;
+    color:var(--viper-dark);
+  }
+  .brand-mid p{
+    font-size:16px;
+    line-height:1.65;
+    color:var(--muted);
+    margin:0;
+    max-width:400px;
+  }
+
+  .brand-bottom{position:relative; z-index:2; display:flex; gap:36px;}
+  .stat{}
+  .stat b{
+    display:block;
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    color:var(--forest);
+  }
+  .stat span{font-size:13px; color:var(--muted);}
+
+  /* -------- Panel derecho -------- */
+  .panel{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px;
+    background:transparent;
+    position:relative;
+    z-index:3;
+    overflow:hidden;
+  }
+  .panel::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:radial-gradient(circle at 85% 10%, rgba(55,224,105,0.35) 0%, transparent 55%);
+    pointer-events:none;
+  }
+  .card-shell{
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:flex-start;
+    gap:20px;
+    width:100%;
+    max-width:560px;
+  }
+  .card{
+    flex:1;
+    min-width:0;
+    background:var(--white);
+    border-radius:22px;
+    padding:36px 32px;
+    box-shadow:0 24px 60px rgba(7,32,15,0.28);
+  }
+  .card-head{margin-bottom:34px;}
+  .back{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:38px;height:38px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    color:var(--forest);
+    margin-bottom:28px;
+    cursor:pointer;
+    background:var(--white);
+  }
+  .back svg{width:18px;height:18px;}
+  .card-head h2{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:30px;
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .card-head p{
+    margin:0;
+    font-size:14.5px;
+    color:var(--muted);
+  }
+  .card-head p a{color:var(--viper-dark); font-weight:600; text-decoration:none;}
+
+  form{margin-top:30px;}
+  .field{margin-bottom:20px;}
+  .field-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .field input,
+  .field select{
+    width:100%;
+    padding:14px 16px;
+    border-radius:12px;
+    border:1.5px solid var(--line);
+    font-family:'Manrope',sans-serif;
+    font-size:14.5px;
+    color:var(--ink);
+    background:var(--mist);
+    outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .field select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f6b5a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:16px;
+    padding-right:40px;
+    cursor:pointer;
+  }
+  .field input::placeholder{color:#9fb6a6;}
+  .field input:focus,
+  .field select:focus{
+    border-color:var(--viper);
+    background-color:var(--white);
+  }
+  .pw-wrap{position:relative;}
+  .pw-wrap svg{
+    position:absolute; right:15px; top:50%; transform:translateY(-50%);
+    width:18px;height:18px; color:var(--muted); cursor:pointer;
+  }
+
+  .row-between{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:22px 0 26px;
+    font-size:13.5px;
+  }
+  .remember{display:flex; align-items:center; gap:8px; color:var(--muted);}
+  .remember input{width:16px; height:16px; accent-color:var(--viper);}
+  .row-between a{color:var(--forest); font-weight:600; text-decoration:none;}
+
+  .btn-main{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:var(--viper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:15.5px;
+    letter-spacing:-0.01em;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .btn-main:hover{background:var(--viper-dark); color:var(--white);}
+  .btn-main:active{transform:scale(0.99);}
+
+  /* -------- Columna lateral: acceso social -------- */
+  .social-col{
+    width:118px;
+    flex-shrink:0;
+    background:var(--viper);
+    border-radius:22px;
+    padding:24px 14px;
+    margin-top:20px;
+    box-shadow:0 24px 60px rgba(7,32,15,0.28);
+  }
+  .social-col p{
+    margin:0 0 18px;
+    font-size:12px;
+    font-weight:800;
+    color:var(--ink);
+    text-align:center;
+    line-height:1.4;
+  }
+  .social{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .social button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:46px;
+    border-radius:12px;
+    border:none;
+    background:var(--white);
+    cursor:pointer;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .social button:hover{background:var(--ink);}
+  .social button:hover svg path,
+  .social button:hover svg rect{fill:var(--viper) !important;}
+  .social svg{width:19px;height:19px;}
+
+  .foot{
+    margin-top:32px;
+    text-align:center;
+    font-size:13.5px;
+    color:var(--muted);
+  }
+  .foot a{color:var(--viper-dark); font-weight:700; text-decoration:none;}
+
+  @media (max-width:920px){
+    .wrap{grid-template-columns:1fr;}
+    .brand{display:none;}
+    .panel{padding:32px 20px;}
+    .bg-layer{grid-template-columns:1fr;}
+    .bg-white{display:none;}
+    .seam-blur-soft{display:none;}
+    .seam-blur-strong{display:none;}
+  }
+  @media (max-width:560px){
+    .card-shell{flex-direction:column-reverse; align-items:stretch;}
+    .social-col{width:100%; margin-top:0;}
+    .social{flex-direction:row;}
+    .social button{flex:1;}
+    .field-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="bg-layer">
+    <div class="bg-white"></div>
+    <div class="bg-green"></div>
+  </div>
+  <div class="seam-blur-soft"></div>
+  <div class="seam-blur-strong"></div>
+
+  <!-- Panel izquierdo: marca -->
+  <div class="brand">
+    <div class="brand-top">
+      <div class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#07200f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12 C 4 6 8 4 12 4 C 17 4 20 8 20 12 C 20 17 16 20 12 20 C 8 20 6 17 6 14"/>
+            <circle cx="16" cy="8.5" r="1"/>
+          </svg>
+        </span>
+        Viridia
+      </div>
+    </div>
+
+    <div class="brand-mid">
+      <span class="eyebrow-tag"><span class="dot"></span>Nuevos miembros</span>
+      <h1>Únete con la<br>precisión de una<br><em>mamba</em>.</h1>
+      <p>Crea tu cuenta y accede al panel de anuncios y herramientas pensado para estudiantes e instructores.</p>
+    </div>
+
+    <div class="brand-bottom">
+      <div class="stat"><b>12k+</b><span>Cuentas activas</span></div>
+      <div class="stat"><b>98%</b><span>Acceso sin fricción</span></div>
+      <div class="stat"><b>24/7</b><span>Soporte al usuario</span></div>
+    </div>
+  </div>
+
+  <!-- Panel derecho: formulario -->
+  <div class="panel">
+    <div class="card-shell">
+    <div class="card">
+      <div class="card-head">
+        <div class="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </div>
+        <h2>Crea tu cuenta</h2>
+        <p>¿Ya tienes cuenta? <a href="#">Inicia sesión aquí</a></p>
+      </div>
+
+      <form onsubmit="return false;">
+        <div class="field-row">
+          <div class="field">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" type="text" placeholder="Tu nombre">
+          </div>
+          <div class="field">
+            <label for="apellido">Apellido</label>
+            <input id="apellido" type="text" placeholder="Tu apellido">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="correo">Correo</label>
+          <input id="correo" type="email" placeholder="nombre@correo.com">
+        </div>
+
+        <div class="field">
+          <label for="clave">Contraseña</label>
+          <div class="pw-wrap">
+            <input id="clave" type="password" placeholder="Crea una contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="clave2">Confirmar contraseña</label>
+          <div class="pw-wrap">
+            <input id="clave2" type="password" placeholder="Repite tu contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="rol">Tipo de cuenta</label>
+          <select id="rol">
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="estudiante">Estudiante</option>
+            <option value="instructor">Instructor</option>
+          </select>
+        </div>
+
+        <button class="btn-main" type="submit">Registrarse</button>
+      </form>
+
+      <p class="foot">Al continuar aceptas nuestros <a href="#">Términos</a> y <a href="#">Aviso de privacidad</a>.</p>
+    </div>
+
+    <div class="social-col">
+      <p>Registrarse con:</p>
+      <div class="social">
+        <button aria-label="Google">
+          <svg viewBox="0 0 24 24"><path fill="#37e069" d="M21.35 11.1H12v2.9h5.35c-.25 1.5-1.7 4.4-5.35 4.4-3.2 0-5.8-2.65-5.8-5.9s2.6-5.9 5.8-5.9c1.8 0 3 .75 3.7 1.4l2.5-2.4C16.85 4.1 14.65 3 12 3 6.95 3 2.9 7.05 2.9 12S6.95 21 12 21c6.9 0 9.35-4.85 9.35-7.35 0-.5-.05-.85-.1-1.55Z"/></svg>
+        </button>
+        <button aria-label="GitHub">
+          <svg viewBox="0 0 24 24"><path fill="#07200f" d="M12 2a10 10 0 0 0-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.9-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+        </button>
+        <button aria-label="Apple">
+          <svg viewBox="0 0 24 24"><path fill="#07200f" d="M16.1 12.4c0-2.15 1.76-3.18 1.84-3.23-1-1.47-2.56-1.67-3.12-1.7-1.33-.13-2.59.78-3.27.78-.68 0-1.72-.76-2.83-.74-1.46.02-2.8.85-3.55 2.16-1.51 2.62-.39 6.5 1.09 8.63.72 1.04 1.58 2.21 2.71 2.17 1.09-.04 1.5-.7 2.82-.7 1.31 0 1.68.7 2.83.68 1.17-.02 1.9-1.06 2.62-2.11.83-1.2 1.17-2.37 1.19-2.43-.03-.01-2.28-.87-2.33-3.51ZM14 5.6c.6-.73.99-1.73.88-2.74-.85.03-1.9.57-2.51 1.28-.55.63-1.03 1.66-.9 2.63.95.08 1.92-.48 2.53-1.17Z"/></svg>
+        </button>
+        <button aria-label="Microsoft">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="8" height="8" fill="#37e069"/>
+            <rect x="13" y="3" width="8" height="8" fill="#0f4a29"/>
+            <rect x="3" y="13" width="8" height="8" fill="#0f4a29"/>
+            <rect x="13" y="13" width="8" height="8" fill="#37e069"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+</div>
+
+</body>
+</html>
